@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://malsup.com/jquery/cycle/
  * Copyright (c) 2007-2008 M. Alsup
- * Version: 2.30 (02-NOV-2008)
+ * Version: 2.31dev (03-NOV-2008)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.30';
+var ver = '2.31dev';
 var ie6 = $.browser.msie && /MSIE 6.0/.test(navigator.userAgent);
 
 function log() {
@@ -364,9 +364,14 @@ function buildPager(els, opts) {
 };
 
 $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
-    var $a = (typeof opts.pagerAnchorBuilder == 'function')
-        ? $(opts.pagerAnchorBuilder(i,el))
-        : $('<a href="#">'+(i+1)+'</a>');
+    var a = (typeof opts.pagerAnchorBuilder == 'function')
+        ? opts.pagerAnchorBuilder(i,el)
+        : '<a href="#">'+(i+1)+'</a>';
+    
+    if (!a)
+        return;
+    
+    var $a = $(a);
     
     // don't reparent if anchor is in the dom
     if ($a.parents('body').length == 0)
