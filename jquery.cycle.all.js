@@ -24,6 +24,12 @@ function log() {
 };
 
 $.fn.cycle = function(options) {
+    if (this.length == 0) {
+        // is your DOM ready?  http://docs.jquery.com/Tutorials:Introducing_$(document).ready()
+        log('terminating; zero elements found by selector' + ($.isReady ? '' : ' (DOM not ready)'));
+        return this;
+    }
+
 	var opt2 = arguments[1];
     return this.each(function() {
         if (options === undefined || options === null)
