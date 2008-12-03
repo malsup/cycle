@@ -154,6 +154,17 @@ $.fn.cycle = function(options) {
             $slides.width(opts.width);
         if (opts.fit && opts.height && opts.height != 'auto') 
             $slides.height(opts.height);
+            
+        if (opts.containerResize) {
+            var maxw = 0, maxh = 0;
+            for(var i=0; i < els.length; i++) {
+                var $e = $(els[i]), w = $e.outerWidth(), h = $e.outerHeight();
+                maxw = w > maxw ? w : maxw;
+                maxh = h > maxh ? h : maxh;
+            }
+            $cont.css({width:maxw+'px',height:maxh+'px'});
+        }
+        
         if (opts.pause) 
             $cont.hover(function(){this.cyclePause=1;},function(){this.cyclePause=0;});
 
@@ -483,6 +494,7 @@ $.fn.cycle.defaults = {
     sync:          1,     // true if in/out transitions should occur simultaneously
     random:        0,     // true for random, false for sequence (not applicable to shuffle fx)
     fit:           0,     // force slides to fit container
+    containerResize: 1,   // resize container to fit largest slide
     pause:         0,     // true to enable "pause on hover"
 	pauseOnPagerHover: 0, // true to pause when hovering over pager link
     autostop:      0,     // true to end slideshow after X transitions (where X == slide count)
