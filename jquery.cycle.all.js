@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://malsup.com/jquery/cycle/
  * Copyright (c) 2007-2008 M. Alsup
- * Version: 2.31dev (21-DEC-2008)
+ * Version: 2.32 (21-DEC-2008)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.31dev';
+var ver = '2.32';
 var ie6 = $.browser.msie && /MSIE 6.0/.test(navigator.userAgent);
 
 function log() {
@@ -324,13 +324,22 @@ function go(els, opts, manual, fwd) {
 			$.fn.cycle.updateActivePagerLink(opts.pager, opts.currSlide);
 	}
 	if (opts.timeout && !opts.continuous)
-		p.cycleTimeout = setTimeout(function() { go(els,opts,0,!opts.rev) }, opts.timeout);
+		p.cycleTimeout = setTimeout(function() { go(els,opts,0,!opts.rev) }, getTimeout(curr,next,opts,fwd));
 	else if (opts.continuous && p.cyclePause) 
 		p.cycleTimeout = setTimeout(function() { go(els,opts,0,!opts.rev) }, 10);
 };
 
 $.fn.cycle.updateActivePagerLink = function(pager, currSlide) {
 	$(pager).find('a').removeClass('activeSlide').filter('a:eq('+currSlide+')').addClass('activeSlide');
+};
+
+function getTimeout(curr, next, opts, fwd) {
+	if (opts.timeoutFn) {
+		var t = opts.timeoutFn(curr,next,opts,fwd);
+		if (t !== false)
+			return t;
+	}
+	return opts.timeout;
 };
 
 // advance slide forward or back
@@ -466,20 +475,21 @@ $.fn.cycle.ver = function() { return ver; };
 $.fn.cycle.defaults = {
 	fx:			  'fade', // one of: fade, shuffle, zoom, scrollLeft, etc
 	timeout:	   4000,  // milliseconds between slide transitions (0 to disable auto advance)
+	timeoutFn:     null,  // callback for determining per-slide timeout value:  function(currSlideElement, nextSlideElement, options, forwardFlag)
 	continuous:	   0,	  // true to start next transition immediately after current one completes
 	speed:		   1000,  // speed of the transition (any valid fx speed value)
 	speedIn:	   null,  // speed of the 'in' transition
 	speedOut:	   null,  // speed of the 'out' transition
-	next:		   null,  // id of element to use as click trigger for next slide
-	prev:		   null,  // id of element to use as click trigger for previous slide
+	next:		   null,  // selector for element to use as click trigger for next slide
+	prev:		   null,  // selector for element to use as click trigger for previous slide
 	prevNextClick: null,  // callback fn for prev/next clicks:	function(isNext, zeroBasedSlideIndex, slideElement)
-	pager:		   null,  // id of element to use as pager container
+	pager:		   null,  // selector for element to use as pager container
 	pagerClick:	   null,  // callback fn for pager clicks:	function(zeroBasedSlideIndex, slideElement)
-	pagerEvent:	  'click', // event which drives the pager navigation
-	pagerAnchorBuilder: null, // callback fn for building anchor links
-	before:		   null,  // transition callback (scope set to element to be shown)
-	after:		   null,  // transition callback (scope set to element that was shown)
-	end:		   null,  // callback invoked when the slideshow terminates (use with autostop or nowrap options)
+	pagerEvent:	  'click', // name of event which drives the pager navigation
+	pagerAnchorBuilder: null, // callback fn for building anchor links:  function(index, DOMelement)
+	before:		   null,  // transition callback (scope set to element to be shown):     function(currSlideElement, nextSlideElement, options, forwardFlag)
+	after:		   null,  // transition callback (scope set to element that was shown):  function(currSlideElement, nextSlideElement, options, forwardFlag)
+	end:		   null,  // callback invoked when the slideshow terminates (use with autostop or nowrap options): function(options)
 	easing:		   null,  // easing method for both in and out transitions
 	easeIn:		   null,  // easing for "in" transition
 	easeOut:	   null,  // easing for "out" transition
@@ -488,7 +498,7 @@ $.fn.cycle.defaults = {
 	animOut:	   null,  // properties that define how the slide animates out
 	cssBefore:	   null,  // properties that define the initial state of the slide before transitioning in
 	cssAfter:	   null,  // properties that defined the state of the slide after transitioning out
-	fxFn:		   null,  // function used to control the transition
+	fxFn:		   null,  // function used to control the transition: function(currSlideElement, nextSlideElement, options, afterCalback, forwardFlag)
 	height:		  'auto', // container height
 	startingSlide: 0,	  // zero-based index of the first slide to be displayed
 	sync:		   1,	  // true if in/out transitions should occur simultaneously
