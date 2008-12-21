@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://malsup.com/jquery/cycle/
  * Copyright (c) 2007-2008 M. Alsup
- * Version: 2.31dev (03-NOV-2008)
+ * Version: 2.31dev (21-DEC-2008)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -166,7 +166,7 @@ $.fn.cycle = function(options) {
         }
         
         if (opts.pause) 
-            $cont.hover(function(){this.cyclePause=1;},function(){this.cyclePause=0;});
+            $cont.hover(function(){this.cyclePause++;},function(){this.cyclePause--;});
 
         // run transition init fn
         var init = $.fn.cycle.transitions[opts.fx];
@@ -407,7 +407,7 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
         return false;
     });
 	if (opts.pauseOnPagerHover)
-		$a.hover(function() { opts.container.cyclePause = 1; }, function() { opts.container.cyclePause = 0; } );
+		$a.hover(function() { opts.container.cyclePause++; }, function() { opts.container.cyclePause--; } );
 };
 
 
