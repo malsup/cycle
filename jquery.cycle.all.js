@@ -1,22 +1,28 @@
 /*
  * jQuery Cycle Plugin (with Transition Definitions)
- * Examples and documentation at: http://malsup.com/jquery/cycle/
- * Copyright (c) 2007-2008 M. Alsup
- * Version: 2.32 (21-DEC-2008)
+ * Examples and documentation at: http://jquery.malsup.com/cycle/
+ * Copyright (c) 2007-2009 M. Alsup
+ * Version: 2.32dev (18-JAN-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
  * Requires: jQuery v1.2.3 or later
  *
- * Based on the work of:
+ * Originally based on the work of:
  *	1) Matt Oakes (http://portfolio.gizone.co.uk/applications/slideshow/)
  *	2) Torsten Baldes (http://medienfreunde.com/lab/innerfade/)
  *	3) Benjamin Sterling (http://www.benjaminsterling.com/experiments/jqShuffle/)
  */
 ;(function($) {
 
-var ver = '2.32';
-var ie6 = $.browser.msie && /MSIE 6.0/.test(navigator.userAgent);
+var ver = '2.33';
+
+// if $.support is not defined (pre jQuery 1.3) add what I need
+if ($.support == undefined) {
+	$.support = {
+		opacity: !($.browser.msie && /MSIE 6.0/.test(navigator.userAgent))
+	};
+}
 
 function log() {
 	if (window.console && window.console.log)
@@ -113,7 +119,7 @@ $.fn.cycle = function(options) {
 			opts.after.push(function() { go(els,opts,0,!opts.rev); });
 			
 		// clearType corrections
-		if (ie6 && opts.cleartype && !opts.cleartypeNoBg)
+		if (!$.support.opacity && opts.cleartype && !opts.cleartypeNoBg)
 			clearTypeFix($slides);
 
 		// allow shorthand overrides of width, height and timeout
@@ -251,7 +257,7 @@ $.fn.cycle = function(options) {
 				opts.nextSlide++;
 			}
 			
-			if (ie6 && opts.cleartype && !opts.cleartypeNoBg)
+			if (!$.support.opacity && opts.cleartype && !opts.cleartypeNoBg)
 				clearTypeFix($s);
 
 			if (opts.fit && opts.width) 
