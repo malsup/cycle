@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.32dev (18-JAN-2009)
+ * Version: 2.33dev (25-JAN-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.33';
+var ver = '2.33dev';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -43,9 +43,10 @@ $.fn.cycle = function(options) {
 		if (options.constructor == String) {
 			switch(options) {
 			case 'stop':
+				this.cycleStop = 1;
 				if (this.cycleTimeout) clearTimeout(this.cycleTimeout);
 				this.cycleTimeout = 0;
-				$(this).data('cycle.opts', '');
+				$(this).removeData('cycle.opts');
 				return;
 			case 'pause':
 				this.cyclePause = 1;
@@ -286,7 +287,7 @@ $.fn.cycle = function(options) {
 function go(els, opts, manual, fwd) {
 	if (opts.busy) return;
 	var p = opts.container, curr = els[opts.currSlide], next = els[opts.nextSlide];
-	if (p.cycleTimeout === 0 && !manual) 
+	if (p.cycleStop === 1 || p.cycleTimeout === 0 && !manual) 
 		return;
 
 	if (!manual && !p.cyclePause && 
@@ -299,11 +300,17 @@ function go(els, opts, manual, fwd) {
 
 	if (manual || !p.cyclePause) {
 		if (opts.before.length)
-			$.each(opts.before, function(i,o) { o.apply(next, [curr, next, opts, fwd]); });
+			$.each(opts.before, function(i,o) { 
+				if (p.cycleStop === 1) return;
+				o.apply(next, [curr, next, opts, fwd]); 
+			});
 		var after = function() {
 			if ($.browser.msie && opts.cleartype)
 				this.style.removeAttribute('filter');
-			$.each(opts.after, function(i,o) { o.apply(next, [curr, next, opts, fwd]); });
+			$.each(opts.after, function(i,o) { 
+				if (p.cycleStop === 1) return;
+				o.apply(next, [curr, next, opts, fwd]); 
+			});
 		};
 
 		if (opts.nextSlide != opts.currSlide) {
