@@ -43,7 +43,7 @@ $.fn.cycle = function(options) {
 		if (options.constructor == String) {
 			switch(options) {
 			case 'stop':
-				this.cycleStop = 1;
+				this.cycleStop = 1; // callbacks look for this
 				if (this.cycleTimeout) clearTimeout(this.cycleTimeout);
 				this.cycleTimeout = 0;
 				$(this).removeData('cycle.opts');
@@ -90,6 +90,7 @@ $.fn.cycle = function(options) {
 			go(options.elements, options, 1, num >= options.currSlide);
 			return;
 		}
+		this.cycleStop = 0; // allow for restarting a stopped slideshow
 
 		// stop existing slideshow for this container (if there is one)
 		if (this.cycleTimeout) clearTimeout(this.cycleTimeout);
