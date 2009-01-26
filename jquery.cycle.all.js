@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.33dev (25-JAN-2009)
+ * Version: 2.34 (26-JAN-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.33dev';
+var ver = '2.34';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -38,12 +38,14 @@ $.fn.cycle = function(options) {
 
 	var opt2 = arguments[1];
 	return this.each(function() {
+		if (this.cycleStop == undefined)
+			this.cycleStop = 0;
 		if (options === undefined || options === null)
 			options = {};
 		if (options.constructor == String) {
 			switch(options) {
 			case 'stop':
-				this.cycleStop = 1; // callbacks look for this
+				this.cycleStop++; // callbacks look for change
 				if (this.cycleTimeout) clearTimeout(this.cycleTimeout);
 				this.cycleTimeout = 0;
 				$(this).removeData('cycle.opts');
@@ -90,7 +92,6 @@ $.fn.cycle = function(options) {
 			go(options.elements, options, 1, num >= options.currSlide);
 			return;
 		}
-		this.cycleStop = 0; // allow for restarting a stopped slideshow
 
 		// stop existing slideshow for this container (if there is one)
 		if (this.cycleTimeout) clearTimeout(this.cycleTimeout);
@@ -112,6 +113,7 @@ $.fn.cycle = function(options) {
 
 		$cont.data('cycle.opts', opts);
 		opts.container = this;
+		opts.stopCount = this.cycleStop;
 
 		opts.elements = els;
 		opts.before = opts.before ? [opts.before] : [];
@@ -288,7 +290,7 @@ $.fn.cycle = function(options) {
 function go(els, opts, manual, fwd) {
 	if (opts.busy) return;
 	var p = opts.container, curr = els[opts.currSlide], next = els[opts.nextSlide];
-	if (p.cycleStop === 1 || p.cycleTimeout === 0 && !manual) 
+	if (p.cycleStop != opts.stopCount || p.cycleTimeout === 0 && !manual) 
 		return;
 
 	if (!manual && !p.cyclePause && 
@@ -302,14 +304,14 @@ function go(els, opts, manual, fwd) {
 	if (manual || !p.cyclePause) {
 		if (opts.before.length)
 			$.each(opts.before, function(i,o) { 
-				if (p.cycleStop === 1) return;
+				if (p.cycleStop != opts.stopCount) return;
 				o.apply(next, [curr, next, opts, fwd]); 
 			});
 		var after = function() {
 			if ($.browser.msie && opts.cleartype)
 				this.style.removeAttribute('filter');
 			$.each(opts.after, function(i,o) { 
-				if (p.cycleStop === 1) return;
+				if (p.cycleStop != opts.stopCount) return;
 				o.apply(next, [curr, next, opts, fwd]); 
 			});
 		};
