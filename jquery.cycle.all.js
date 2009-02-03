@@ -458,13 +458,23 @@ function clearTypeFix($slides) {
 };
 
 
-$.fn.cycle.custom = function(curr, next, opts, cb, immediate) {
+$.fn.cycle.custom = function(curr, next, opts, cb, speedOverride) {
 	var $l = $(curr), $n = $(next);
 	$n.css(opts.cssBefore);
-	var speedIn = immediate ? 1 : opts.speedIn;
-	var speedOut = immediate ? 1 : opts.speedOut;
-	var easeIn = immediate ? null : opts.easeIn;
-	var easeOut = immediate ? null : opts.easeOut;
+	
+	var speedIn = opts.speedIn;
+	var speedOut = opts.speedOut;
+	var easeIn = opts.easeIn;
+	var easeOut = opts.easeOut;
+	
+	if (speedOverride) {
+		if (typeof speedOverride == 'number')
+			speedIn = speedOut = speedOverride;
+		else
+			speedIn = speedOut = 1;
+		easeIn = easeOut = null;
+	}
+
 	var fn = function() {$n.animate(opts.animIn, speedIn, easeIn, cb)};
 	$l.animate(opts.animOut, speedOut, easeOut, function() {
 		if (opts.cssAfter) $l.css(opts.cssAfter);
@@ -529,7 +539,7 @@ $.fn.cycle.defaults = {
 	slideExpr:	   null,  // expression for selecting slides (if something other than all children is required)
 	cleartype:	   0,	  // true if clearType corrections should be applied (for IE)
 	nowrap:		   0,	  // true to prevent slideshow from wrapping
-	fastOnEvent:   0	  // force immediate transition when triggered manually (via pager or prev/next)
+	fastOnEvent:   0	  // force fast transitions when triggered manually (via pager or prev/next); value == time in ms
 };
 
 })(jQuery);
