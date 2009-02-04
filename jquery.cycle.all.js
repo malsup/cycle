@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.34 (26-JAN-2009)
+ * Version: 2.35 (03-FEB-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -165,7 +165,8 @@ $.fn.cycle = function(options) {
 		if (opts.fit && opts.height && opts.height != 'auto') 
 			$slides.height(opts.height);
 			
-		if (opts.containerResize) {
+		var reshape = opts.containerResize && !$cont.innerHeight();
+		if (reshape) { // apply this logic only if container has no size http://tinyurl.com/da2oa9
 			var maxw = 0, maxh = 0;
 			for(var i=0; i < els.length; i++) {
 				var $e = $(els[i]), w = $e.outerWidth(), h = $e.outerHeight();
