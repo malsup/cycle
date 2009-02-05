@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.35 (03-FEB-2009)
+ * Version: 2.36 (04-FEB-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -218,7 +218,7 @@ $.fn.cycle = function(options) {
 			opts.speedOut = opts.speed;
 
 		opts.slideCount = els.length;
-		opts.currSlide = first;
+		opts.currSlide = opts.lastSlide = first;
 		if (opts.random) {
 			opts.nextSlide = opts.currSlide;
 			if (++opts.randomIndex == els.length) 
@@ -326,6 +326,7 @@ function go(els, opts, manual, fwd) {
 			else
 				$.fn.cycle.custom(curr, next, opts, after, manual && opts.fastOnEvent);
 		}
+		opts.lastSlide = opts.currSlide;
 		if (opts.random) {
 			opts.currSlide = opts.nextSlide;
 			if (++opts.randomIndex == els.length) 
@@ -436,6 +437,15 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 		$a.hover(function() { opts.container.cyclePause++; }, function() { opts.container.cyclePause--; } );
 };
 
+// helper fn to calculate the number of slides between the current and the next
+$.fn.cycle.hopsFromLast = function(opts, fwd) {
+	var hops, l = opts.lastSlide, c = opts.currSlide;
+	if (fwd)
+		hops = c > l ? c - l : opts.slideCount - l;
+	else
+		hops = c < l ? l - c : l + opts.slideCount - c;
+	return hops;
+};
 
 // this fixes clearType problems in ie6 by setting an explicit bg color
 function clearTypeFix($slides) {
@@ -675,7 +685,9 @@ $.fn.cycle.transitions.shuffle = function($cont, $slides, opts) {
 	opts.fxFn = function(curr, next, opts, cb, fwd) {
 		var $el = fwd ? $(curr) : $(next);
 		$el.animate(opts.shuffle, opts.speedIn, opts.easeIn, function() {
-			fwd ? opts.els.push(opts.els.shift()) : opts.els.unshift(opts.els.pop());
+			var hops = $.fn.cycle.hopsFromLast(opts, fwd);
+			for (var k=0; k < hops; k++)
+				fwd ? opts.els.push(opts.els.shift()) : opts.els.unshift(opts.els.pop());
 			if (fwd) 
 				for (var i=0, len=opts.els.length; i < len; i++)
 					$(opts.els[i]).css('z-index', len-i);
