@@ -579,7 +579,7 @@ $.fn.cycle.transitions.scrollUp = function($cont, $slides, opts) {
 	$cont.css('overflow','hidden');
 	opts.before.push(function(curr, next, opts) {
 		$(this).show();
-		opts.cssBefore.top = next.offsetHeight;
+		opts.cssBefore.top = next.offsetHeight-1;
 		opts.animOut.top = 0-curr.offsetHeight;
 	});
 	opts.cssFirst = { top: 0 };
@@ -590,7 +590,7 @@ $.fn.cycle.transitions.scrollDown = function($cont, $slides, opts) {
 	$cont.css('overflow','hidden');
 	opts.before.push(function(curr, next, opts) {
 		$(this).show();
-		opts.cssBefore.top = 0-next.offsetHeight;
+		opts.cssBefore.top = 1-next.offsetHeight;
 		opts.animOut.top = curr.offsetHeight;
 	});
 	opts.cssFirst = { top: 0 };
@@ -601,7 +601,7 @@ $.fn.cycle.transitions.scrollLeft = function($cont, $slides, opts) {
 	$cont.css('overflow','hidden');
 	opts.before.push(function(curr, next, opts) {
 		$(this).show();
-		opts.cssBefore.left = next.offsetWidth;
+		opts.cssBefore.left = next.offsetWidth-1;
 		opts.animOut.left = 0-curr.offsetWidth;
 	});
 	opts.cssFirst = { left: 0 };
@@ -611,7 +611,7 @@ $.fn.cycle.transitions.scrollRight = function($cont, $slides, opts) {
 	$cont.css('overflow','hidden');
 	opts.before.push(function(curr, next, opts) {
 		$(this).show();
-		opts.cssBefore.left = 0-next.offsetWidth;
+		opts.cssBefore.left = 1-next.offsetWidth;
 		opts.animOut.left = curr.offsetWidth;
 	});
 	opts.cssFirst = { left: 0 };
@@ -623,7 +623,7 @@ $.fn.cycle.transitions.scrollHorz = function($cont, $slides, opts) {
 	opts.before.push(function(curr, next, opts, fwd) {
 		$(this).show();
 		var currW = curr.offsetWidth, nextW = next.offsetWidth;
-		opts.cssBefore = fwd ? { left: nextW } : { left: -nextW };
+		opts.cssBefore = fwd ? { left: nextW-1 } : { left: 1-nextW };
 		opts.animIn.left = 0;
 		opts.animOut.left = fwd ? -currW : currW;
 		$slides.not(curr).css(opts.cssBefore);
@@ -637,7 +637,7 @@ $.fn.cycle.transitions.scrollVert = function($cont, $slides, opts) {
 	opts.before.push(function(curr, next, opts, fwd) {
 		$(this).show();
 		var currH = curr.offsetHeight, nextH = next.offsetHeight;
-		opts.cssBefore = fwd ? { top: -nextH } : { top: nextH };
+		opts.cssBefore = fwd ? { top: 1-nextH } : { top: nextH-1 };
 		opts.animIn.top = 0;
 		opts.animOut.top = fwd ? currH : -currH;
 		$slides.not(curr).css(opts.cssBefore);
