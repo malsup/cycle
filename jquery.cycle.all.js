@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.36 (04-FEB-2009)
+ * Version: 2.37 (12-FEB-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.34';
+var ver = '2.37';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -289,6 +289,10 @@ $.fn.cycle = function(options) {
 };
 
 function go(els, opts, manual, fwd) {
+	if (manual && opts.busy) {
+		$(els).stop(true,true);
+		opts.busy = false;
+	}
 	if (opts.busy) return;
 	var p = opts.container, curr = els[opts.currSlide], next = els[opts.nextSlide];
 	if (p.cycleStop != opts.stopCount || p.cycleTimeout === 0 && !manual) 
