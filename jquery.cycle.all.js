@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.50 (14-FEB-2009)
+ * Version: 2.51 (16-FEB-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.50';
+var ver = '2.51';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -589,13 +589,12 @@ $.fn.cycle.transitions = {
 	fade: function($cont, $slides, opts) {
 		$slides.not(':eq('+opts.currSlide+')').css('opacity',0);
 		opts.before.push(function(curr,next,opts) { 
-			$(this).show(); 
-			opts.cssBefore.height = next.cycleH;
-			opts.cssBefore.width = next.cycleW;
+			$.fn.cycle.commonReset(curr,next,opts);
+			opts.cssBefore.opacity = 0; 
 		});
 		opts.animIn	   = { opacity: 1 };
 		opts.animOut   = { opacity: 0 };
-		opts.cssBefore = { opacity: 0, top: 0, left: 0 };
+		opts.cssBefore = { top: 0, left: 0 };
 	}
 };
 
@@ -756,11 +755,7 @@ $.fn.cycle.transitions.slideY = function($cont, $slides, opts) {
 $.fn.cycle.transitions.shuffle = function($cont, $slides, opts) {
 	var w = $cont.css('overflow', 'visible').width();
 	$slides.css({left: 0, top: 0});
-//	opts.before.push($.fn.cycle.commonReset);
 	opts.before.push(function(curr,next,opts) { 
-//		$(this).show() 
-//		opts.cssBefore.height = next.cycleH;
-//		opts.cssBefore.width = next.cycleW;
 		$.fn.cycle.commonReset(curr,next,opts,true,true,true);
 	});
 	opts.speed = opts.speed / 2; // shuffle has 2 transitions		 
@@ -806,7 +801,7 @@ $.fn.cycle.transitions.turnUp = function($cont, $slides, opts) {
 		opts.animIn.height = next.cycleH;
 	});
 	opts.cssFirst  = { top: 0 };
-	opts.cssBefore = { left: 0, height: 0, display: 'block', opacity: 1 };
+	opts.cssBefore = { left: 0, height: 0 };
 	opts.animIn	   = { top: 0 };
 	opts.animOut   = { height: 0 };
 };
@@ -844,15 +839,14 @@ $.fn.cycle.transitions.turnRight = function($cont, $slides, opts) {
 // zoom
 $.fn.cycle.transitions.zoom = function($cont, $slides, opts) {
 	opts.before.push(function(curr, next, opts) {
-		$(this).show();
-		opts.cssBefore = { width: 0, height: 0, top: next.cycleH/2, left: next.cycleW/2, display: 'block', opacity: 1 };
+		$.fn.cycle.commonReset(curr,next,opts,false,false,true);
+		opts.cssBefore.top = next.cycleH/2;
+		opts.cssBefore.left = next.cycleW/2;
 		opts.animIn	   = { top: 0, left: 0, width: next.cycleW, height: next.cycleH };
 		opts.animOut   = { width: 0, height: 0, top: curr.cycleH/2, left: curr.cycleW/2 };
-		$(curr).css('zIndex',opts.slideCount+1);
-		$(next).css('zIndex',opts.slideCount);
-		opts.cssAfter = { display: 'none' };
 	});	   
-	opts.cssFirst = { top:0, left: 0 }; 
+	opts.cssFirst = { top:0, left: 0 };
+	opts.cssBefore = { width: 0, height: 0 };
 };
 
 // fadeZoom
@@ -908,53 +902,43 @@ $.fn.cycle.transitions.blindZ = function($cont, $slides, opts) {
 // growX - grow horizontally from centered 0 width
 $.fn.cycle.transitions.growX = function($cont, $slides, opts) {
 	opts.before.push(function(curr, next, opts) {
+		$.fn.cycle.commonReset(curr,next,opts,false,true);
 		opts.cssBefore.left = this.cycleW/2;
 		opts.animIn = { left: 0, width: this.cycleW };
 		opts.animOut = { left: 0 };
-		$(curr).css('zIndex',opts.slideCount);
-		$(next).css('zIndex',opts.slideCount+1);
-		opts.cssBefore.height = next.cycleH;
 	});	   
-	opts.cssBefore = { width: 0, display: 'block', opacity: 1, top: 0 };
+	opts.cssBefore = { width: 0, top: 0 };
 };
 // growY - grow vertically from centered 0 height
 $.fn.cycle.transitions.growY = function($cont, $slides, opts) {
 	opts.before.push(function(curr, next, opts) {
+		$.fn.cycle.commonReset(curr,next,opts,true,false);
 		opts.cssBefore.top = this.cycleH/2;
 		opts.animIn = { top: 0, height: this.cycleH };
 		opts.animOut = { top: 0 };
-		$(curr).css('zIndex',opts.slideCount);
-		$(next).css('zIndex',opts.slideCount+1);
-		opts.cssBefore.width = next.cycleW;
 	});	   
-	opts.cssBefore = { height: 0, display: 'block', opacity: 1, left: 0 };
+	opts.cssBefore = { height: 0, left: 0 };
 };
 
 // curtainX - squeeze in both edges horizontally
 $.fn.cycle.transitions.curtainX = function($cont, $slides, opts) {
 	opts.before.push(function(curr, next, opts) {
-		$(opts.elements).not(curr).hide();
-		opts.cssBefore = { top: 0, left: next.cycleW/2, width: 0, zIndex: 1, display: 'block', opacity: 1 };
+		$.fn.cycle.commonReset(curr,next,opts,false,true);
+		opts.cssBefore.left = next.cycleW/2;
 		opts.animIn = { left: 0, width: this.cycleW };
 		opts.animOut = { left: curr.cycleW/2, width: 0 };
-		$(curr).css('zIndex',opts.slideCount);
-		$(next).css('zIndex',opts.slideCount+1);
-		opts.cssBefore.height = next.cycleH;
-		opts.cssAfter = { display: 'none' };
 	});	   
+	opts.cssBefore = { top: 0, width: 0 };
 };
 // curtainY - squeeze in both edges vertically
 $.fn.cycle.transitions.curtainY = function($cont, $slides, opts) {
 	opts.before.push(function(curr, next, opts) {
-		$(opts.elements).not(curr).hide();
-		opts.cssBefore = { top: next.cycleH/2, left: 0, height: 0, zIndex: 1, display: 'block', opacity: 1 };
+		$.fn.cycle.commonReset(curr,next,opts,true,false);
+		opts.cssBefore.top = next.cycleH/2;
 		opts.animIn = { top: 0, height: next.cycleH };
 		opts.animOut = { top: curr.cycleH/2, height: 0 };
-		opts.cssBefore.width = next.cycleW;
-		$(curr).css('zIndex',opts.slideCount);
-		$(next).css('zIndex',opts.slideCount+1);
-		opts.cssAfter = { display: 'none' };
 	});	   
+	opts.cssBefore = { left: 0, height: 0 };
 };
 
 // cover - curr slide covered by next slide
