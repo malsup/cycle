@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.53 (23-FEB-2009)
+ * Version: 2.54 (23-FEB-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.53';
+var ver = '2.54';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -112,9 +112,9 @@ function handleArguments(cont, options, arg2) {
 					log('options not found, can not resume');
 					return;
 				}
-				if (this.cycleTimeout) {
+				if (cont.cycleTimeout) {
 					clearTimeout(cont.cycleTimeout);
-					this.cycleTimeout = 0;
+					cont.cycleTimeout = 0;
 				}			 
 				go(options.elements, options, 1, 1);
 			}
@@ -747,7 +747,7 @@ $.fn.cycle.defaults = {
 	autostopCount: 0,	  // number of transitions (optionally used with autostop to define X)
 	delay:		   0,	  // additional delay (in ms) for first transition (hint: can be negative)
 	slideExpr:	   null,  // expression for selecting slides (if something other than all children is required)
-	cleartype:	   !$.support.opacity,	// true if clearType corrections should be applied (for IE)
+	cleartype:	   !$.support.opacity,  // true if clearType corrections should be applied (for IE)
 	nowrap:		   0,	  // true to prevent slideshow from wrapping
 	fastOnEvent:   0,	  // force fast transitions when triggered manually (via pager or prev/next); value == time in ms
 	randomizeEffects: 1,  // valid when multiple effects are used; true to make the effect sequence random
