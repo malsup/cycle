@@ -2,20 +2,20 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.56 (03-MAR-2009)
+ * Version: 2.58 (12-MAR-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
- * Requires: jQuery v1.2.3 or later
+ * Requires: jQuery v1.2.6 or later
  *
  * Originally based on the work of:
- *	1) Matt Oakes (http://portfolio.gizone.co.uk/applications/slideshow/)
+ *	1) Matt Oakes
  *	2) Torsten Baldes (http://medienfreunde.com/lab/innerfade/)
  *	3) Benjamin Sterling (http://www.benjaminsterling.com/experiments/jqShuffle/)
  */
 ;(function($) {
 
-var ver = '2.56';
+var ver = '2.58';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -250,9 +250,9 @@ function buildOptions($cont, $slides, els, options) {
 	}
 	$slides.each(function() {
         // try to get height/width of every slide
-		var $el = $(this);
-		this.cycleH = (opts.fit && opts.height) ? opts.height : $el.height();
-		this.cycleW = (opts.fit && opts.width) ? opts.width : $el.width();
+		var $el = $(this), ow = this.offsetWidth, oh = this.offsetHeight;
+		this.cycleH = (opts.fit && opts.height) ? opts.height : oh ? $el.height() : 0;
+		this.cycleW = (opts.fit && opts.width) ? opts.width : ow ? $el.width() : 0;
 	});
 
 	opts.cssBefore = opts.cssBefore || {};
@@ -332,7 +332,7 @@ function supportMultiTransitions(opts) {
 			var fx = opts.fxs[i];
 			var tx = txs[fx];
 			if (!tx || !txs.hasOwnProperty(fx) || !$.isFunction(tx)) {
-				log('discarding unknowtn transition: ',fx);
+				log('discarding unknown transition: ',fx);
 				opts.fxs.splice(i,1);
 				i--;
 			}
@@ -425,7 +425,7 @@ $.fn.cycle.resetState = function(opts, fx) {
 // this is the main engine fn, it handles the timeouts, callbacks and slide index mgmt
 function go(els, opts, manual, fwd) {
     // opts.busy is true if we're in the middle of an animation
-	if (manual && opts.busy) {
+	if (manual && opts.busy && opts.manualTrump) {
         // let manual transitions requests trump active ones
 		$(els).stop(true,true);
 		opts.busy = false;
@@ -751,7 +751,8 @@ $.fn.cycle.defaults = {
 	nowrap:		   0,	  // true to prevent slideshow from wrapping
 	fastOnEvent:   0,	  // force fast transitions when triggered manually (via pager or prev/next); value == time in ms
 	randomizeEffects: 1,  // valid when multiple effects are used; true to make the effect sequence random
-	rev:           0      // causes animations to transition in reverse
+	rev:           0,     // causes animations to transition in reverse
+	manualTrump:   true   // causes manual transition to stop an active transition instead of being ignored
 };
 
 })(jQuery);
