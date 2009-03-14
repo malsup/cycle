@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.60 (14-MAR-2009)
+ * Version: 2.62 (14-MAR-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.60';
+var ver = '2.62';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -27,6 +27,7 @@ if ($.support == undefined) {
 function log() {
 	if (window.console && window.console.log)
 		window.console.log('[cycle] ' + Array.prototype.join.call(arguments,''));
+	//$('body').append('<div>'+Array.prototype.join.call(arguments,'')+'</div>');
 };
 
 // the options arg can be...
@@ -266,10 +267,7 @@ function buildOptions($cont, $slides, els, options, o) {
 	    this.cycleH = (opts.fit && opts.height) ? opts.height : $el.height();
 		this.cycleW = (opts.fit && opts.width) ? opts.width : $el.width();
 
-		// sigh..  sniffing, hacking, shrugging...
-		var defaultIE = ($.browser.msie  && this.cycleW == 28 && this.cycleH == 30 && !this.complete);
-		var defaultOp = ($.browser.opera && this.cycleW == 42 && this.cycleH == 19);
-		if ((this.cycleH == 0 || this.cycleY == 0 || defaultIE || defaultOp) && $el.is('img')) {
+		if ((this.cycleH == 0 || this.cycleW == 0 || this.complete === false) && $el.is('img')) {
 			if (o.s && opts.requeueOnImageNotLoaded && ++options.requeueAttempts < 100) { // track retry count so we don't loop forever
 				log(options.requeueAttempts,' - img slide not loaded, requeuing slideshow: ', this.src);
 				setTimeout(function() {$(o.s,o.c).cycle(options)}, opts.requeueTimeout);
