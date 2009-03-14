@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.58 (12-MAR-2009)
+ * Version: 2.60 (14-MAR-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.58';
+var ver = '2.60';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -40,12 +40,12 @@ function log() {
 //     that the resume should occur immediately (not wait for next timeout)
 
 $.fn.cycle = function(options, arg2) {
+	var o = { s: this.selector, c: this.context };
 
     // in 1.3+ we can fix mistakes with the ready state
 	if (this.length == 0 && options != 'stop') {
-        if (!$.isReady && this.selector) {
+        if (!$.isReady && o.s) {
             log('DOM not ready, queuing slideshow')
-            var o = { s: this.selector, c: this.context };
             $(function() {
                 $(o.s,o.c).cycle(options,arg2);
             });
@@ -75,7 +75,7 @@ $.fn.cycle = function(options, arg2) {
 			return;
 		}
 
-        var opts = buildOptions($cont, $slides, els, options);
+        var opts = buildOptions($cont, $slides, els, options, o);
         if (opts === false)
             return;
 
@@ -110,7 +110,7 @@ function handleArguments(cont, options, arg2) {
 				options = $(cont).data('cycle.opts');
 				if (!options) {
 					log('options not found, can not resume');
-					return;
+					return false;
 				}
 				if (cont.cycleTimeout) {
 					clearTimeout(cont.cycleTimeout);
@@ -148,8 +148,15 @@ function handleArguments(cont, options, arg2) {
     return options;
 };
 
+function removeFilter(el, opts) {
+	if (!$.support.opacity && opts.cleartype && el.style.filter) {
+		try { el.style.removeAttribute('filter'); }
+		catch(smother) {} // handle old opera versions
+	}
+};
+
 // one-time initialization
-function buildOptions($cont, $slides, els, options) {
+function buildOptions($cont, $slides, els, options, o) {
 	// support metadata plugin (v1.0 and v2.0)
 	var opts = $.extend({}, $.fn.cycle.defaults, options || {}, $.metadata ? $cont.metadata() : $.meta ? $cont.data() : {});
 	if (opts.autostop)
@@ -166,7 +173,7 @@ function buildOptions($cont, $slides, els, options) {
 
     // push some after callbacks
 	if (!$.support.opacity && opts.cleartype)
-		opts.after.push(function() { this.style.removeAttribute('filter'); });
+		opts.after.push(function() { removeFilter(this, opts); });
 	if (opts.continuous)
 		opts.after.push(function() { go(els,opts,0,!opts.rev); });
 
@@ -209,8 +216,7 @@ function buildOptions($cont, $slides, els, options) {
 
     // make sure first slide is visible
 	$(els[first]).css('opacity',1).show(); // opacity bit needed to handle restart use case
-	if (!$.support.opacity && opts.cleartype)
-        els[first].style.removeAttribute('filter');
+	removeFilter(els[first], opts);
 
     // stretch slides
 	if (opts.fit && opts.width)
@@ -236,7 +242,8 @@ function buildOptions($cont, $slides, els, options) {
 	if (opts.pause)
 		$cont.hover(function(){this.cyclePause++;},function(){this.cyclePause--;});
 
-    supportMultiTransitions(opts);
+    if (supportMultiTransitions(opts) === false)
+		return false;
 
 	// run transition init fn
 	if (!opts.multiFx) {
@@ -248,12 +255,36 @@ function buildOptions($cont, $slides, els, options) {
 			return false;
 		}
 	}
+
+	// apparently a lot of people use image slideshows without height/width attributes on the images.
+	// Cycle 2.50+ requires the sizing info for every slide; this block tries to deal with that.
+	var requeue = false;
+	options.requeueAttempts = options.requeueAttempts || 0;
 	$slides.each(function() {
-        // try to get height/width of every slide
-		var $el = $(this), ow = this.offsetWidth, oh = this.offsetHeight;
-		this.cycleH = (opts.fit && opts.height) ? opts.height : oh ? $el.height() : 0;
-		this.cycleW = (opts.fit && opts.width) ? opts.width : ow ? $el.width() : 0;
+        // try to get height/width of each slide
+		var $el = $(this);
+	    this.cycleH = (opts.fit && opts.height) ? opts.height : $el.height();
+		this.cycleW = (opts.fit && opts.width) ? opts.width : $el.width();
+
+		// sigh..  sniffing, hacking, shrugging...
+		var defaultIE = ($.browser.msie  && this.cycleW == 28 && this.cycleH == 30 && !this.complete);
+		var defaultOp = ($.browser.opera && this.cycleW == 42 && this.cycleH == 19);
+		if ((this.cycleH == 0 || this.cycleY == 0 || defaultIE || defaultOp) && $el.is('img')) {
+			if (o.s && opts.requeueOnImageNotLoaded && ++options.requeueAttempts < 100) { // track retry count so we don't loop forever
+				log(options.requeueAttempts,' - img slide not loaded, requeuing slideshow: ', this.src);
+				setTimeout(function() {$(o.s,o.c).cycle(options)}, opts.requeueTimeout);
+				requeue = true;
+				return false; // break each loop
+			}
+			else {
+				log('could not determine size of image: '+this.src);
+			}
+		}
+		return true;
 	});
+
+	if (requeue)
+		return false;
 
 	opts.cssBefore = opts.cssBefore || {};
 	opts.animIn = opts.animIn || {};
@@ -361,6 +392,7 @@ function supportMultiTransitions(opts) {
 		}
 		log('randomized fx sequence: ',opts.fxs);
 	}
+	return true;
 };
 
 // provide a mechanism for adding slides after the slideshow has started
@@ -406,7 +438,7 @@ function exposeAddSlide(opts, els) {
 
 // reset internal state; we do this on every pass in order to support multiple effects
 $.fn.cycle.resetState = function(opts, fx) {
-    var fx = fx || opts.fx;
+    fx = fx || opts.fx;
 	opts.before = []; opts.after = [];
 	opts.cssBefore = $.extend({}, opts.original.cssBefore);
 	opts.cssAfter  = $.extend({}, opts.original.cssAfter);
@@ -452,12 +484,11 @@ function go(els, opts, manual, fwd) {
     // if slideshow is paused, only transition on a manual trigger
 	if (manual || !p.cyclePause) {
         var fx = opts.fx;
-
 		// keep trying to get the slide size if we don't have it yet
-		curr.cycleH = curr.cycleH || curr.offsetHeight;
-		curr.cycleW = curr.cycleW || curr.offsetWidth;
-		next.cycleH = next.cycleH || next.offsetHeight;
-		next.cycleW = next.cycleW || next.offsetWidth;
+		curr.cycleH = curr.cycleH || $(curr).height();
+		curr.cycleW = curr.cycleW || $(curr).width();
+		next.cycleH = next.cycleH || $(next).height();
+		next.cycleW = next.cycleW || $(next).width();
 
 		// support multiple transition types
 		if (opts.multiFx) {
@@ -638,7 +669,7 @@ $.fn.cycle.hopsFromLast = function(opts, fwd) {
 // (otherwise text slides look horrible during a fade transition)
 function clearTypeFix($slides) {
 	function hex(s) {
-		var s = parseInt(s).toString(16);
+		s = parseInt(s).toString(16);
 		return s.length < 2 ? '0'+s : s;
 	};
 	function getBg(e) {
@@ -752,7 +783,9 @@ $.fn.cycle.defaults = {
 	fastOnEvent:   0,	  // force fast transitions when triggered manually (via pager or prev/next); value == time in ms
 	randomizeEffects: 1,  // valid when multiple effects are used; true to make the effect sequence random
 	rev:           0,     // causes animations to transition in reverse
-	manualTrump:   true   // causes manual transition to stop an active transition instead of being ignored
+	manualTrump:   true,  // causes manual transition to stop an active transition instead of being ignored
+	requeueOnImageNotLoaded: true, // requeue the slideshow if any image slides are not yet loaded
+	requeueTimeout: 250   // ms delay for requeue
 };
 
 })(jQuery);
