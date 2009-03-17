@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.62 (14-MAR-2009)
+ * Version: 2.63 (17-MAR-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.62';
+var ver = '2.63';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -26,8 +26,8 @@ if ($.support == undefined) {
 
 function log() {
 	if (window.console && window.console.log)
-		window.console.log('[cycle] ' + Array.prototype.join.call(arguments,''));
-	//$('body').append('<div>'+Array.prototype.join.call(arguments,'')+'</div>');
+		window.console.log('[cycle] ' + Array.prototype.join.call(arguments,' '));
+	//$('body').append('<div>'+Array.prototype.join.call(arguments,' ')+'</div>');
 };
 
 // the options arg can be...
@@ -267,15 +267,23 @@ function buildOptions($cont, $slides, els, options, o) {
 	    this.cycleH = (opts.fit && opts.height) ? opts.height : $el.height();
 		this.cycleW = (opts.fit && opts.width) ? opts.width : $el.width();
 
-		if ((this.cycleH == 0 || this.cycleW == 0 || this.complete === false) && $el.is('img')) {
-			if (o.s && opts.requeueOnImageNotLoaded && ++options.requeueAttempts < 100) { // track retry count so we don't loop forever
-				log(options.requeueAttempts,' - img slide not loaded, requeuing slideshow: ', this.src);
-				setTimeout(function() {$(o.s,o.c).cycle(options)}, opts.requeueTimeout);
-				requeue = true;
-				return false; // break each loop
-			}
-			else {
-				log('could not determine size of image: '+this.src);
+		if ( $el.is('img') ) {
+			// sigh..  sniffing, hacking, shrugging...
+			var loadingIE    = ($.browser.msie  && this.cycleW == 28 && this.cycleH == 30 && !this.complete);
+			var loadingOp    = ($.browser.opera && this.cycleW == 42 && this.cycleH == 19 && !this.complete);
+			var loadingOther = (this.cycleH == 0 && this.cycleW == 0 && !this.complete);
+
+			// don't requeue for images that are still loading but have a valid size
+			if (loadingIE || loadingOp || loadingOther) {
+				if (o.s && opts.requeueOnImageNotLoaded && ++options.requeueAttempts < 100) { // track retry count so we don't loop forever
+					log(options.requeueAttempts,' - img slide not loaded, requeuing slideshow: ', this.src, this.cycleW, this.cycleH);
+					setTimeout(function() {$(o.s,o.c).cycle(options)}, opts.requeueTimeout);
+					requeue = true;
+					return false; // break each loop
+				}
+				else {
+					log('could not determine size of image: '+this.src, this.cycleW, this.cycleH);
+				}
 			}
 		}
 		return true;
