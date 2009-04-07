@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.63 (17-MAR-2009)
+ * Version: 2.65 (07-APR-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.63';
+var ver = '2.65';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -138,7 +138,7 @@ function handleArguments(cont, options, arg2) {
 		}
 		options.nextSlide = num;
 		if (cont.cycleTimeout) {
-			clearTimeout(this.cycleTimeout);
+			clearTimeout(cont.cycleTimeout);
 			cont.cycleTimeout = 0;
 		}
         if (typeof arg2 == 'string')
@@ -642,8 +642,20 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 		return;
 	var $a = $(a);
 	// don't reparent if anchor is in the dom
-	if ($a.parents('body').length == 0)
-		$a.appendTo($p);
+	if ($a.parents('body').length == 0) {
+		var arr = [];
+		if ($p.length > 1) {
+			$p.each(function() {
+				var $clone = $a.clone(true);
+				$(this).append($clone);
+				arr.push($clone);
+			});
+			$a = $(arr);
+		}
+		else {
+			$a.appendTo($p);
+		}
+	}
 
 	$a.bind(opts.pagerEvent, function() {
 		opts.nextSlide = i;
