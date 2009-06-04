@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.65 (07-APR-2009)
+ * Version: 2.66 (04-JUN-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.65';
+var ver = '2.66';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -270,11 +270,12 @@ function buildOptions($cont, $slides, els, options, o) {
 		if ( $el.is('img') ) {
 			// sigh..  sniffing, hacking, shrugging...
 			var loadingIE    = ($.browser.msie  && this.cycleW == 28 && this.cycleH == 30 && !this.complete);
+			var loadingFF    = ($.browser.mozilla && this.cycleW == 34 && this.cycleH == 19 && !this.complete);
 			var loadingOp    = ($.browser.opera && this.cycleW == 42 && this.cycleH == 19 && !this.complete);
 			var loadingOther = (this.cycleH == 0 && this.cycleW == 0 && !this.complete);
 
 			// don't requeue for images that are still loading but have a valid size
-			if (loadingIE || loadingOp || loadingOther) {
+			if (loadingIE || loadingFF || loadingOp || loadingOther) {
 				if (o.s && opts.requeueOnImageNotLoaded && ++options.requeueAttempts < 100) { // track retry count so we don't loop forever
 					log(options.requeueAttempts,' - img slide not loaded, requeuing slideshow: ', this.src, this.cycleW, this.cycleH);
 					setTimeout(function() {$(o.s,o.c).cycle(options)}, opts.requeueTimeout);
@@ -797,6 +798,7 @@ $.fn.cycle.defaults = {
 	delay:		   0,	  // additional delay (in ms) for first transition (hint: can be negative)
 	slideExpr:	   null,  // expression for selecting slides (if something other than all children is required)
 	cleartype:	   !$.support.opacity,  // true if clearType corrections should be applied (for IE)
+	cleartypeNoBg: false, // set to true to disable extra cleartype fixing (leave false to force background color setting on slides)
 	nowrap:		   0,	  // true to prevent slideshow from wrapping
 	fastOnEvent:   0,	  // force fast transitions when triggered manually (via pager or prev/next); value == time in ms
 	randomizeEffects: 1,  // valid when multiple effects are used; true to make the effect sequence random
