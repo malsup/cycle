@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.66 (04-JUN-2009)
+ * Version: 2.70 (10-AUG-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.66';
+var ver = '2.70';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -44,9 +44,9 @@ $.fn.cycle = function(options, arg2) {
 	var o = { s: this.selector, c: this.context };
 
     // in 1.3+ we can fix mistakes with the ready state
-	if (this.length == 0 && options != 'stop') {
+	if (this.length === 0 && options != 'stop') {
         if (!$.isReady && o.s) {
-            log('DOM not ready, queuing slideshow')
+            log('DOM not ready, queuing slideshow');
             $(function() {
                 $(o.s,o.c).cycle(options,arg2);
             });
@@ -59,8 +59,8 @@ $.fn.cycle = function(options, arg2) {
 
     // iterate the matched nodeset
 	return this.each(function() {
-        options = handleArguments(this, options, arg2);
-        if (options === false)
+        var opts = handleArguments(this, options, arg2);
+        if (opts === false)
             return;
 
 		// stop existing slideshow for this container (if there is one)
@@ -69,21 +69,21 @@ $.fn.cycle = function(options, arg2) {
 		this.cycleTimeout = this.cyclePause = 0;
 
 		var $cont = $(this);
-		var $slides = options.slideExpr ? $(options.slideExpr, this) : $cont.children();
+		var $slides = options.slideExpr ? $(opts.slideExpr, this) : $cont.children();
 		var els = $slides.get();
 		if (els.length < 2) {
 			log('terminating; too few slides: ' + els.length);
 			return;
 		}
 
-        var opts = buildOptions($cont, $slides, els, options, o);
-        if (opts === false)
+        var opts2 = buildOptions($cont, $slides, els, opts, o);
+        if (opts2 === false)
             return;
 
         // if it's an auto slideshow, kick it off
-		if (opts.timeout || opts.continuous)
-			this.cycleTimeout = setTimeout(function(){go(els,opts,0,!opts.rev)},
-				opts.continuous ? 10 : opts.timeout + (opts.delay||0));
+		if (opts2.timeout || opts2.continuous)
+			this.cycleTimeout = setTimeout(function(){go(els,opts2,0,!opts2.rev)},
+				opts2.continuous ? 10 : opts2.timeout + (opts2.delay||0));
 	});
 };
 
@@ -120,9 +120,19 @@ function handleArguments(cont, options, arg2) {
 				go(options.elements, options, 1, 1);
 			}
 			return false;
+		case 'prev':
+		case 'next':
+			var opts = $(cont).data('cycle.opts');
+			if (!opts) {
+				log('options not found, "prev/next" ignored');
+				return false;
+			}
+			$.fn.cycle[options](opts);
+			return false;
 		default:
 			options = { fx: options };
 		};
+		return options;
 	}
 	else if (options.constructor == Number) {
 		// go to the requested slide
@@ -229,8 +239,8 @@ function buildOptions($cont, $slides, els, options, o) {
 	var reshape = opts.containerResize && !$cont.innerHeight();
 	if (reshape) { // do this only if container has no size http://tinyurl.com/da2oa9
 		var maxw = 0, maxh = 0;
-		for(var i=0; i < els.length; i++) {
-			var $e = $(els[i]), e = $e[0], w = $e.outerWidth(), h = $e.outerHeight();
+		for(var j=0; j < els.length; j++) {
+			var $e = $(els[j]), e = $e[0], w = $e.outerWidth(), h = $e.outerHeight();
             if (!w) w = e.offsetWidth;
             if (!h) h = e.offsetHeight;
 			maxw = w > maxw ? w : maxw;
@@ -268,12 +278,13 @@ function buildOptions($cont, $slides, els, options, o) {
 		this.cycleW = (opts.fit && opts.width) ? opts.width : $el.width();
 
 		if ( $el.is('img') ) {
-			// sigh..  sniffing, hacking, shrugging...
+			// sigh..  sniffing, hacking, shrugging...  this crappy hack tries to account for what browsers do when
+			// an image is being downloaded and the markup did not include sizing info (height/width attributes);
+			// there seems to be some "default" sizes used in this situation
 			var loadingIE    = ($.browser.msie  && this.cycleW == 28 && this.cycleH == 30 && !this.complete);
 			var loadingFF    = ($.browser.mozilla && this.cycleW == 34 && this.cycleH == 19 && !this.complete);
-			var loadingOp    = ($.browser.opera && this.cycleW == 42 && this.cycleH == 19 && !this.complete);
+			var loadingOp    = ($.browser.opera && ((this.cycleW == 42 && this.cycleH == 19) || (this.cycleW == 37 && this.cycleH == 17)) && !this.complete);
 			var loadingOther = (this.cycleH == 0 && this.cycleW == 0 && !this.complete);
-
 			// don't requeue for images that are still loading but have a valid size
 			if (loadingIE || loadingFF || loadingOp || loadingOther) {
 				if (o.s && opts.requeueOnImageNotLoaded && ++options.requeueAttempts < 100) { // track retry count so we don't loop forever
@@ -360,15 +371,15 @@ function saveOriginalOpts(opts) {
 };
 
 function supportMultiTransitions(opts) {
-    var txs = $.fn.cycle.transitions;
+    var i, tx, txs = $.fn.cycle.transitions;
 	// look for multiple effects
 	if (opts.fx.indexOf(',') > 0) {
 		opts.multiFx = true;
 		opts.fxs = opts.fx.replace(/\s*/g,'').split(',');
 		// discard any bogus effect names
-		for (var i=0; i < opts.fxs.length; i++) {
+		for (i=0; i < opts.fxs.length; i++) {
 			var fx = opts.fxs[i];
-			var tx = txs[fx];
+			tx = txs[fx];
 			if (!tx || !txs.hasOwnProperty(fx) || !$.isFunction(tx)) {
 				log('discarding unknown transition: ',fx);
 				opts.fxs.splice(i,1);
@@ -385,7 +396,7 @@ function supportMultiTransitions(opts) {
 		opts.multiFx = true;
 		opts.fxs = [];
 		for (p in txs) {
-			var tx = txs[p];
+			tx = txs[p];
 			if (txs.hasOwnProperty(p) && $.isFunction(tx))
 				opts.fxs.push(p);
 		}
@@ -393,7 +404,7 @@ function supportMultiTransitions(opts) {
 	if (opts.multiFx && opts.randomizeEffects) {
 		// munge the fxs array to make effect selection random
 		var r1 = Math.floor(Math.random() * 20) + 30;
-		for (var i = 0; i < r1; i++) {
+		for (i = 0; i < r1; i++) {
 			var r2 = Math.floor(Math.random() * opts.fxs.length);
 			opts.fxs.push(opts.fxs.splice(r2,1)[0]);
 		}
@@ -636,14 +647,17 @@ function buildPager(els, opts) {
 };
 
 $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
-	var a = ($.isFunction(opts.pagerAnchorBuilder))
-		? opts.pagerAnchorBuilder(i,el)
-		: '<a href="#">'+(i+1)+'</a>';
+	var a;
+	if ($.isFunction(opts.pagerAnchorBuilder))
+		a = opts.pagerAnchorBuilder(i,el);
+	else
+		a = '<a href="#">'+(i+1)+'</a>';
+		
 	if (!a)
 		return;
 	var $a = $(a);
 	// don't reparent if anchor is in the dom
-	if ($a.parents('body').length == 0) {
+	if ($a.parents('body').length === 0) {
 		var arr = [];
 		if ($p.length > 1) {
 			$p.each(function() {
@@ -658,7 +672,8 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 		}
 	}
 
-	$a.bind(opts.pagerEvent, function() {
+	$a.bind(opts.pagerEvent, function(e) {
+		e.preventDefault();
 		opts.nextSlide = i;
 		var p = opts.$cont[0], timeout = p.cycleTimeout;
 		if (timeout) {
@@ -670,6 +685,10 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 		go(els,opts,1,opts.currSlide < i); // trigger the trans
 		return false;
 	});
+	
+	if (opts.pagerEvent != 'click')
+		$a.click(function(){return false;}); // supress click
+	
 	if (opts.pauseOnPagerHover)
 		$a.hover(function() { opts.$cont[0].cyclePause++; }, function() { opts.$cont[0].cyclePause--; } );
 };
@@ -915,7 +934,7 @@ $.fn.cycle.transitions.slideY = function($cont, $slides, opts) {
 
 // shuffle
 $.fn.cycle.transitions.shuffle = function($cont, $slides, opts) {
-	var w = $cont.css('overflow', 'visible').width();
+	var i, w = $cont.css('overflow', 'visible').width();
 	$slides.css({left: 0, top: 0});
 	opts.before.push(function(curr,next,opts) {
 		$.fn.cycle.commonReset(curr,next,opts,true,true,true);
@@ -924,10 +943,10 @@ $.fn.cycle.transitions.shuffle = function($cont, $slides, opts) {
 	opts.random = 0;
 	opts.shuffle = opts.shuffle || {left:-w, top:15};
 	opts.els = [];
-	for (var i=0; i < $slides.length; i++)
+	for (i=0; i < $slides.length; i++)
 		opts.els.push($slides[i]);
 
-	for (var i=0; i < opts.currSlide; i++)
+	for (i=0; i < opts.currSlide; i++)
 		opts.els.push(opts.els.shift());
 
 	// custom transition fn (hat tip to Benjamin Sterling for this bit of sweetness!)
@@ -939,9 +958,10 @@ $.fn.cycle.transitions.shuffle = function($cont, $slides, opts) {
 			var hops = $.fn.cycle.hopsFromLast(opts, fwd);
 			for (var k=0; k < hops; k++)
 				fwd ? opts.els.push(opts.els.shift()) : opts.els.unshift(opts.els.pop());
-			if (fwd)
+			if (fwd) {
 				for (var i=0, len=opts.els.length; i < len; i++)
 					$(opts.els[i]).css('z-index', len-i+count);
+			}
 			else {
 				var z = $(curr).css('z-index');
 				$el.css('z-index', parseInt(z)+1+count);
@@ -1177,9 +1197,9 @@ $.fn.cycle.transitions.wipe = function($cont, $slides, opts) {
 		else if (/b2t/.test(opts.clip))
 			clip = 'rect('+h+'px '+w+'px '+h+'px 0px)';
 		else if (/zoom/.test(opts.clip)) {
-			var t = parseInt(h/2);
-			var l = parseInt(w/2);
-			clip = 'rect('+t+'px '+l+'px '+t+'px '+l+'px)';
+			var top = parseInt(h/2);
+			var left = parseInt(w/2);
+			clip = 'rect('+top+'px '+left+'px '+top+'px '+left+'px)';
 		}
 	}
 
