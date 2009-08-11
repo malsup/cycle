@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.70 (10-AUG-2009)
+ * Version: 2.71 (11-AUG-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.70';
+var ver = '2.71';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -69,7 +69,7 @@ $.fn.cycle = function(options, arg2) {
 		this.cycleTimeout = this.cyclePause = 0;
 
 		var $cont = $(this);
-		var $slides = options.slideExpr ? $(opts.slideExpr, this) : $cont.children();
+		var $slides = opts.slideExpr ? $(opts.slideExpr, this) : $cont.children();
 		var els = $slides.get();
 		if (els.length < 2) {
 			log('terminating; too few slides: ' + els.length);
@@ -348,9 +348,9 @@ function buildOptions($cont, $slides, els, options, o) {
 		opts.after[1].apply(e0, [e0, e0, opts, true]);
 
 	if (opts.next)
-		$(opts.next).click(function(){return advance(opts,opts.rev?-1:1)});
+		$(opts.next).bind(opts.prevNextEvent,function(){return advance(opts,opts.rev?-1:1)});
 	if (opts.prev)
-		$(opts.prev).click(function(){return advance(opts,opts.rev?1:-1)});
+		$(opts.prev).bind(opts.prevNextEvent,function(){return advance(opts,opts.rev?1:-1)});
 	if (opts.pager)
 		buildPager(els,opts);
 
@@ -788,6 +788,7 @@ $.fn.cycle.defaults = {
 	next:		   null,  // selector for element to use as click trigger for next slide
 	prev:		   null,  // selector for element to use as click trigger for previous slide
 	prevNextClick: null,  // callback fn for prev/next clicks:	function(isNext, zeroBasedSlideIndex, slideElement)
+	prevNextEvent:'click',// event which drives the manual transition to the previous or next slide
 	pager:		   null,  // selector for element to use as pager container
 	pagerClick:	   null,  // callback fn for pager clicks:	function(zeroBasedSlideIndex, slideElement)
 	pagerEvent:	  'click', // name of event which drives the pager navigation
