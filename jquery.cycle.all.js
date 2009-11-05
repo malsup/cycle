@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.72 (09-SEP-2009)
+ * Version: 2.73 (04-NOV-2009)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@
  */
 ;(function($) {
 
-var ver = '2.72';
+var ver = '2.73';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -590,7 +590,9 @@ function go(els, opts, manual, fwd) {
 
 // invoked after transition
 $.fn.cycle.updateActivePagerLink = function(pager, currSlide) {
-	$(pager).find('a').removeClass('activeSlide').filter('a:eq('+currSlide+')').addClass('activeSlide');
+	$(pager).each(function() {
+		$(this).find('a').removeClass('activeSlide').filter('a:eq('+currSlide+')').addClass('activeSlide');
+	});
 };
 
 // calculate timeout value for current transition
@@ -676,7 +678,7 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 			$p.each(function() {
 				var $clone = $a.clone(true);
 				$(this).append($clone);
-				arr.push($clone);
+				arr.push($clone[0]);
 			});
 			$a = $(arr);
 		}
@@ -849,7 +851,7 @@ $.fn.cycle.defaults = {
  * This script is a plugin for the jQuery Cycle Plugin
  * Examples and documentation at: http://malsup.com/jquery/cycle/
  * Copyright (c) 2007-2008 M. Alsup
- * Version:	 2.52
+ * Version:	 2.72
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
