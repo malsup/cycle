@@ -2,20 +2,15 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.73 (04-NOV-2009)
+ * Version: 2.74 (03-FEB-2010)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
  * Requires: jQuery v1.2.6 or later
- *
- * Originally based on the work of:
- *	1) Matt Oakes
- *	2) Torsten Baldes (http://medienfreunde.com/lab/innerfade/)
- *	3) Benjamin Sterling (http://www.benjaminsterling.com/experiments/jqShuffle/)
  */
 ;(function($) {
 
-var ver = '2.73';
+var ver = '2.74';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -31,17 +26,16 @@ function debug(s) {
 function log() {
 	if (window.console && window.console.log)
 		window.console.log('[cycle] ' + Array.prototype.join.call(arguments,' '));
-	//$('body').append('<div>'+Array.prototype.join.call(arguments,' ')+'</div>');
 };
 
 // the options arg can be...
 //   a number  - indicates an immediate transition should occur to the given slide index
-//   a string  - 'stop', 'pause', 'resume', or the name of a transition effect (ie, 'fade', 'zoom', etc)
+//   a string  - 'stop', 'pause', 'resume', 'next', 'prev', or the name of a transition effect (ie, 'fade', 'zoom', etc)
 //   an object - properties to control the slideshow
 //
 // the arg2 arg can be...
 //   the name of an fx (only used in conjunction with a numeric value for 'options')
-//   the value true (only used in conjunction with a options == 'resume') and indicates
+//   the value true (only used in first arg == 'resume') and indicates
 //	 that the resume should occur immediately (not wait for next timeout)
 
 $.fn.cycle = function(options, arg2) {
@@ -111,6 +105,9 @@ function handleArguments(cont, options, arg2) {
 				clearTimeout(cont.cycleTimeout);
 			cont.cycleTimeout = 0;
 			$(cont).removeData('cycle.opts');
+			return false;
+		case 'toggle':
+			cont.cyclePause = (cont.cyclePause === 1) ? 0 : 1;
 			return false;
 		case 'pause':
 			cont.cyclePause = 1;
@@ -578,7 +575,7 @@ function go(els, opts, manual, fwd) {
 			$.fn.cycle.updateActivePagerLink(opts.pager, opts.currSlide);
 	}
 
-	// stage the next transtion
+	// stage the next transition
 	var ms = 0;
 	if (opts.timeout && !opts.continuous)
 		ms = getTimeout(curr, next, opts, fwd);
@@ -795,7 +792,7 @@ $.fn.cycle.ver = function() { return ver; };
 $.fn.cycle.defaults = {
 	fx:			  'fade', // name of transition effect (or comma separated names, ex: fade,scrollUp,shuffle)
 	timeout:	   4000,  // milliseconds between slide transitions (0 to disable auto advance)
-	timeoutFn:	 null,  // callback for determining per-slide timeout value:  function(currSlideElement, nextSlideElement, options, forwardFlag)
+	timeoutFn:     null,  // callback for determining per-slide timeout value:  function(currSlideElement, nextSlideElement, options, forwardFlag)
 	continuous:	   0,	  // true to start next transition immediately after current one completes
 	speed:		   1000,  // speed of the transition (any valid fx speed value)
 	speedIn:	   null,  // speed of the 'in' transition
