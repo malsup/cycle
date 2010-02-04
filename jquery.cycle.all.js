@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.74 (03-FEB-2010)
+ * Version: 2.75dev (03-FEB-2010)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = '2.74';
+var ver = '2.75dev';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -30,7 +30,7 @@ function log() {
 
 // the options arg can be...
 //   a number  - indicates an immediate transition should occur to the given slide index
-//   a string  - 'stop', 'pause', 'resume', 'next', 'prev', or the name of a transition effect (ie, 'fade', 'zoom', etc)
+//   a string  - 'stop', 'pause', 'resume', 'toggle', 'next', 'prev', or the name of a transition effect (ie, 'fade', 'zoom', etc)
 //   an object - properties to control the slideshow
 //
 // the arg2 arg can be...
@@ -218,12 +218,12 @@ function buildOptions($cont, $slides, els, options, o) {
 		for (var i = 0; i < els.length; i++)
 			opts.randomMap.push(i);
 		opts.randomMap.sort(function(a,b) {return Math.random() - 0.5;});
-		opts.randomIndex = 0;
-		opts.startingSlide = opts.randomMap[0];
+		opts.randomIndex = 1;
+		opts.startingSlide = opts.randomMap[1];
 	}
 	else if (opts.startingSlide >= els.length)
 		opts.startingSlide = 0; // catch bogus input
-	opts.currSlide = opts.startingSlide = opts.startingSlide || 0;
+	opts.currSlide = opts.startingSlide || 0;
 	var first = opts.startingSlide;
 
 	// set position and zIndex on all the slides
@@ -328,7 +328,6 @@ function buildOptions($cont, $slides, els, options, o) {
 	opts.slideCount = els.length;
 	opts.currSlide = opts.lastSlide = first;
 	if (opts.random) {
-		opts.nextSlide = opts.currSlide;
 		if (++opts.randomIndex == els.length)
 			opts.randomIndex = 0;
 		opts.nextSlide = opts.randomMap[opts.randomIndex];
@@ -628,8 +627,6 @@ function advance(opts, val) {
 		opts.nextSlide = opts.randomMap[opts.randomIndex];
 	}
 	else if (opts.random) {
-		if (++opts.randomIndex == els.length)
-			opts.randomIndex = 0;
 		opts.nextSlide = opts.randomMap[opts.randomIndex];
 	}
 	else {
