@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.75dev (03-FEB-2010)
+ * Version: 2.75 (10-FEB-2010)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = '2.75dev';
+var ver = '2.75';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -61,6 +61,8 @@ $.fn.cycle = function(options, arg2) {
 		if (opts === false)
 			return;
 
+		opts.updateActivePagerLink = opts.updateActivePagerLink || $.fn.cycle.updateActivePagerLink;
+		
 		// stop existing slideshow for this container (if there is one)
 		if (this.cycleTimeout)
 			clearTimeout(this.cycleTimeout);
@@ -571,7 +573,7 @@ function go(els, opts, manual, fwd) {
 		}
 
 		if (opts.pager)
-			$.fn.cycle.updateActivePagerLink(opts.pager, opts.currSlide);
+			opts.updateActivePagerLink(opts.pager, opts.currSlide, opts.activePagerClass);
 	}
 
 	// stage the next transition
@@ -585,9 +587,9 @@ function go(els, opts, manual, fwd) {
 };
 
 // invoked after transition
-$.fn.cycle.updateActivePagerLink = function(pager, currSlide) {
+$.fn.cycle.updateActivePagerLink = function(pager, currSlide, clsName) {
 	$(pager).each(function() {
-		$(this).find('a').removeClass('activeSlide').filter('a:eq('+currSlide+')').addClass('activeSlide');
+		$(this).find('a').removeClass(clsName).filter('a:eq('+currSlide+')').addClass(clsName);
 	});
 };
 
@@ -652,7 +654,7 @@ function buildPager(els, opts) {
 	$.each(els, function(i,o) {
 		$.fn.cycle.createPagerAnchor(i,o,$p,els,opts);
 	});
-   $.fn.cycle.updateActivePagerLink(opts.pager, opts.startingSlide);
+	opts.updateActivePagerLink(opts.pager, opts.startingSlide, opts.activePagerClass);
 };
 
 $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
@@ -834,7 +836,9 @@ $.fn.cycle.defaults = {
 	rev:		   0,	 // causes animations to transition in reverse
 	manualTrump:   true,  // causes manual transition to stop an active transition instead of being ignored
 	requeueOnImageNotLoaded: true, // requeue the slideshow if any image slides are not yet loaded
-	requeueTimeout: 250   // ms delay for requeue
+	requeueTimeout: 250,  // ms delay for requeue
+	activePagerClass: 'activeSlide', // class name used for the active pager link
+	updateActivePagerLink: null // callback fn invoked to update the active pager link (adds/removes activePagerClass style)
 };
 
 })(jQuery);
