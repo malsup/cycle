@@ -1,8 +1,8 @@
 /*!
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
- * Copyright (c) 2007-2009 M. Alsup
- * Version: 2.75 (10-FEB-2010)
+ * Copyright (c) 2007-2010 M. Alsup
+ * Version: 2.76 (21-FEB-2010)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = '2.75';
+var ver = '2.76';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -508,7 +508,7 @@ function go(els, opts, manual, fwd) {
 	}
 
 	// if slideshow is paused, only transition on a manual trigger
-	if (manual || !p.cyclePause) {
+	if ((manual || !p.cyclePause) && (opts.nextSlide != opts.currSlide)) {
 		var fx = opts.fx;
 		// keep trying to get the slide size if we don't have it yet
 		curr.cycleH = curr.cycleH || $(curr).height();
@@ -547,16 +547,14 @@ function go(els, opts, manual, fwd) {
 			});
 		};
 
-		if (opts.nextSlide != opts.currSlide) {
-			// get ready to perform the transition
-			opts.busy = 1;
-			if (opts.fxFn) // fx function provided?
-				opts.fxFn(curr, next, opts, after, fwd);
-			else if ($.isFunction($.fn.cycle[opts.fx])) // fx plugin ?
-				$.fn.cycle[opts.fx](curr, next, opts, after);
-			else
-				$.fn.cycle.custom(curr, next, opts, after, manual && opts.fastOnEvent);
-		}
+		// get ready to perform the transition
+		opts.busy = 1;
+		if (opts.fxFn) // fx function provided?
+			opts.fxFn(curr, next, opts, after, fwd);
+		else if ($.isFunction($.fn.cycle[opts.fx])) // fx plugin ?
+			$.fn.cycle[opts.fx](curr, next, opts, after);
+		else
+			$.fn.cycle.custom(curr, next, opts, after, manual && opts.fastOnEvent);
 
 		// calculate the next slide
 		opts.lastSlide = opts.currSlide;
