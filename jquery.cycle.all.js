@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.76 (21-FEB-2010)
+ * Version: 2.79 (03-MAR-2010)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = '2.76';
+var ver = '2.79';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -250,8 +250,8 @@ function buildOptions($cont, $slides, els, options, o) {
 		var maxw = 0, maxh = 0;
 		for(var j=0; j < els.length; j++) {
 			var $e = $(els[j]), e = $e[0], w = $e.outerWidth(), h = $e.outerHeight();
-			if (!w) w = e.offsetWidth;
-			if (!h) h = e.offsetHeight;
+			if (!w) w = e.offsetWidth || e.width || $e.attr('width')
+			if (!h) h = e.offsetHeight || e.height || $e.attr('height');
 			maxw = w > maxw ? w : maxw;
 			maxh = h > maxh ? h : maxh;
 		}
@@ -272,8 +272,8 @@ function buildOptions($cont, $slides, els, options, o) {
 	$slides.each(function() {
 		// try to get height/width of each slide
 		var $el = $(this);
-		this.cycleH = (opts.fit && opts.height) ? opts.height : $el.height();
-		this.cycleW = (opts.fit && opts.width) ? opts.width : $el.width();
+		this.cycleH = (opts.fit && opts.height) ? opts.height : ($el.height() || this.offsetHeight || this.height || $el.attr('height') || 0);
+		this.cycleW = (opts.fit && opts.width) ? opts.width : ($el.width() || this.offsetWidth || this.width || $el.attr('width') || 0);
 
 		if ( $el.is('img') ) {
 			// sigh..  sniffing, hacking, shrugging...  this crappy hack tries to account for what browsers do when
@@ -359,7 +359,7 @@ function buildOptions($cont, $slides, els, options, o) {
 		$(opts.next).bind(opts.prevNextEvent,function(){return advance(opts,opts.rev?-1:1)});
 	if (opts.prev)
 		$(opts.prev).bind(opts.prevNextEvent,function(){return advance(opts,opts.rev?1:-1)});
-	if (opts.pager)
+	if (opts.pager || opts.pagerAnchorBuilder)
 		buildPager(els,opts);
 
 	exposeAddSlide(opts, els);
@@ -452,7 +452,7 @@ function exposeAddSlide(opts, els) {
 
 		$s.css(opts.cssBefore);
 
-		if (opts.pager)
+		if (opts.pager || opts.pagerAnchorBuilder)
 			$.fn.cycle.createPagerAnchor(els.length-1, s, $(opts.pager), els, opts);
 
 		if ($.isFunction(opts.onAddSlide))
