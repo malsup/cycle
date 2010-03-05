@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.79 (03-MAR-2010)
+ * Version: 2.80 (05-MAR-2010)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = '2.79';
+var ver = '2.80';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -30,7 +30,7 @@ function log() {
 
 // the options arg can be...
 //   a number  - indicates an immediate transition should occur to the given slide index
-//   a string  - 'stop', 'pause', 'resume', 'toggle', 'next', 'prev', or the name of a transition effect (ie, 'fade', 'zoom', etc)
+//   a string  - 'pause', 'resume', 'toggle', 'next', 'prev', 'stop', 'destroy' or the name of a transition effect (ie, 'fade', 'zoom', etc)
 //   an object - properties to control the slideshow
 //
 // the arg2 arg can be...
@@ -101,12 +101,18 @@ function handleArguments(cont, options, arg2) {
 		options = {};
 	if (options.constructor == String) {
 		switch(options) {
+		case 'destroy':
 		case 'stop':
+			var opts = $(cont).data('cycle.opts');
+			if (!opts)
+				return false;
 			cont.cycleStop++; // callbacks look for change
 			if (cont.cycleTimeout)
 				clearTimeout(cont.cycleTimeout);
 			cont.cycleTimeout = 0;
 			$(cont).removeData('cycle.opts');
+			if (options == 'destroy')
+				destroy(opts);
 			return false;
 		case 'toggle':
 			cont.cyclePause = (cont.cyclePause === 1) ? 0 : 1;
@@ -173,6 +179,22 @@ function removeFilter(el, opts) {
 		try { el.style.removeAttribute('filter'); }
 		catch(smother) {} // handle old opera versions
 	}
+};
+
+// unbind event handlers
+function destroy(opts) {
+	if (opts.next)
+		$(opts.next).unbind(opts.prevNextEvent);
+	if (opts.prev)
+		$(opts.prev).unbind(opts.prevNextEvent);
+	
+	if (opts.pager || opts.pagerAnchorBuilder)
+		$.each(opts.pagerAnchors || [], function() {
+			this.unbind().remove();
+		});
+	opts.pagerAnchors = null;
+	if (opts.destroy) // callback
+		opts.destroy(opts);
 };
 
 // one-time initialization
@@ -681,6 +703,8 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 		}
 	}
 
+	opts.pagerAnchors =  opts.pagerAnchors || [];
+	opts.pagerAnchors.push($a);
 	$a.bind(opts.pagerEvent, function(e) {
 		e.preventDefault();
 		opts.nextSlide = i;
@@ -692,11 +716,11 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 		if ($.isFunction(opts.pagerClick))
 			opts.pagerClick(opts.nextSlide, els[opts.nextSlide]);
 		go(els,opts,1,opts.currSlide < i); // trigger the trans
-		return false;
+//		return false;
 	});
 	
-	if (opts.pagerEvent != 'click')
-		$a.click(function(){return false;}); // supress click
+	if ( ! /^click/.test(opts.pagerEvent) && !opts.allowPagerClickBubble)
+		$a.bind('click.cycle', function(){return false;}); // supress click
 	
 	if (opts.pauseOnPagerHover)
 		$a.hover(function() { opts.$cont[0].cyclePause++; }, function() { opts.$cont[0].cyclePause--; } );
@@ -797,10 +821,11 @@ $.fn.cycle.defaults = {
 	next:		   null,  // selector for element to use as click trigger for next slide
 	prev:		   null,  // selector for element to use as click trigger for previous slide
 	prevNextClick: null,  // callback fn for prev/next clicks:	function(isNext, zeroBasedSlideIndex, slideElement)
-	prevNextEvent:'click',// event which drives the manual transition to the previous or next slide
+	prevNextEvent:'click.cycle',// event which drives the manual transition to the previous or next slide
 	pager:		   null,  // selector for element to use as pager container
 	pagerClick:	   null,  // callback fn for pager clicks:	function(zeroBasedSlideIndex, slideElement)
-	pagerEvent:	  'click', // name of event which drives the pager navigation
+	pagerEvent:	  'click.cycle', // name of event which drives the pager navigation
+	allowPagerClickBubble: false, // allows or prevents click event on pager anchors from bubbling
 	pagerAnchorBuilder: null, // callback fn for building anchor links:  function(index, DOMelement)
 	before:		   null,  // transition callback (scope set to element to be shown):	 function(currSlideElement, nextSlideElement, options, forwardFlag)
 	after:		   null,  // transition callback (scope set to element that was shown):  function(currSlideElement, nextSlideElement, options, forwardFlag)
