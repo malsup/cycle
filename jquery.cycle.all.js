@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.80 (05-MAR-2010)
+ * Version: 2.81 (19-MAR-2010)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = '2.80';
+var ver = '2.81';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -339,7 +339,9 @@ function buildOptions($cont, $slides, els, options, o) {
 			opts.speed = $.fx.speeds[opts.speed] || parseInt(opts.speed);
 		if (!opts.sync)
 			opts.speed = opts.speed / 2;
-		while((opts.timeout - opts.speed) < 250) // sanitize timeout
+		
+		var buffer = opts.fx == 'shuffle' ? 500 : 250;
+		while((opts.timeout - opts.speed) < buffer) // sanitize timeout
 			opts.timeout += opts.speed;
 	}
 	if (opts.easing)
@@ -507,12 +509,15 @@ function go(els, opts, manual, fwd) {
 	// opts.busy is true if we're in the middle of an animation
 	if (manual && opts.busy && opts.manualTrump) {
 		// let manual transitions requests trump active ones
+		debug('manualTrump in go(), stopping active transition');
 		$(els).stop(true,true);
 		opts.busy = false;
 	}
 	// don't begin another timeout-based transition if there is one active
-	if (opts.busy)
+	if (opts.busy) {
+		debug('transition active, ignoring new tx request');
 		return;
+	}
 
 	var p = opts.$cont[0], curr = els[opts.currSlide], next = els[opts.nextSlide];
 
@@ -569,32 +574,36 @@ function go(els, opts, manual, fwd) {
 			});
 		};
 
+		debug('tx firing; currSlide: ' + opts.currSlide + '; nextSlide: ' + opts.nextSlide);
+		
 		// get ready to perform the transition
 		opts.busy = 1;
 		if (opts.fxFn) // fx function provided?
 			opts.fxFn(curr, next, opts, after, fwd);
 		else if ($.isFunction($.fn.cycle[opts.fx])) // fx plugin ?
-			$.fn.cycle[opts.fx](curr, next, opts, after);
+			$.fn.cycle[opts.fx](curr, next, opts, after, manual && opts.fastOnEvent);
 		else
 			$.fn.cycle.custom(curr, next, opts, after, manual && opts.fastOnEvent);
-
-		// calculate the next slide
-		opts.lastSlide = opts.currSlide;
-		if (opts.random) {
-			opts.currSlide = opts.nextSlide;
-			if (++opts.randomIndex == els.length)
-				opts.randomIndex = 0;
-			opts.nextSlide = opts.randomMap[opts.randomIndex];
-		}
-		else { // sequence
-			var roll = (opts.nextSlide + 1) == els.length;
-			opts.nextSlide = roll ? 0 : opts.nextSlide+1;
-			opts.currSlide = roll ? els.length-1 : opts.nextSlide-1;
-		}
-
-		if (opts.pager)
-			opts.updateActivePagerLink(opts.pager, opts.currSlide, opts.activePagerClass);
 	}
+
+	// calculate the next slide
+	opts.lastSlide = opts.currSlide;
+	if (opts.random) {
+		opts.currSlide = opts.nextSlide;
+		if (++opts.randomIndex == els.length)
+			opts.randomIndex = 0;
+		opts.nextSlide = opts.randomMap[opts.randomIndex];
+		if (opts.nextSlide == opts.currSlide)
+			opts.nextSlide = (opts.currSlide == opts.slideCount - 1) ? 0 : opts.currSlide + 1;
+	}
+	else { // sequence
+		var roll = (opts.nextSlide + 1) == els.length;
+		opts.nextSlide = roll ? 0 : opts.nextSlide+1;
+		opts.currSlide = roll ? els.length-1 : opts.nextSlide-1;
+	}
+
+	if (opts.pager)
+		opts.updateActivePagerLink(opts.pager, opts.currSlide, opts.activePagerClass);
 
 	// stage the next transition
 	var ms = 0;
@@ -663,8 +672,9 @@ function advance(opts, val) {
 		}
 	}
 
-	if ($.isFunction(opts.prevNextClick))
-		opts.prevNextClick(val > 0, opts.nextSlide, els[opts.nextSlide]);
+	var cb = opts.onPrevNextEvent || opts.prevNextClick; // prevNextClick is deprecated
+	if ($.isFunction(cb))
+		cb(val > 0, opts.nextSlide, els[opts.nextSlide]);
 	go(els, opts, 1, val>=0);
 	return false;
 };
@@ -679,8 +689,10 @@ function buildPager(els, opts) {
 
 $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 	var a;
-	if ($.isFunction(opts.pagerAnchorBuilder))
+	if ($.isFunction(opts.pagerAnchorBuilder)) {
 		a = opts.pagerAnchorBuilder(i,el);
+		debug('pagerAnchorBuilder('+i+', el) returned: ' + a);
+	}
 	else
 		a = '<a href="#">'+(i+1)+'</a>';
 		
@@ -713,14 +725,15 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 			clearTimeout(timeout);
 			p.cycleTimeout = 0;
 		}
-		if ($.isFunction(opts.pagerClick))
-			opts.pagerClick(opts.nextSlide, els[opts.nextSlide]);
+		var cb = opts.onPagerEvent || opts.pagerClick; // pagerClick is deprecated
+		if ($.isFunction(cb))
+			cb(opts.nextSlide, els[opts.nextSlide]);
 		go(els,opts,1,opts.currSlide < i); // trigger the trans
-//		return false;
+//		return false; // <== allow bubble
 	});
 	
 	if ( ! /^click/.test(opts.pagerEvent) && !opts.allowPagerClickBubble)
-		$a.bind('click.cycle', function(){return false;}); // supress click
+		$a.bind('click.cycle', function(){return false;}); // suppress click
 	
 	if (opts.pauseOnPagerHover)
 		$a.hover(function() { opts.$cont[0].cyclePause++; }, function() { opts.$cont[0].cyclePause--; } );
@@ -739,6 +752,7 @@ $.fn.cycle.hopsFromLast = function(opts, fwd) {
 // fix clearType problems in ie6 by setting an explicit bg color
 // (otherwise text slides look horrible during a fade transition)
 function clearTypeFix($slides) {
+	debug('applying clearType background-color hack');
 	function hex(s) {
 		s = parseInt(s).toString(16);
 		return s.length < 2 ? '0'+s : s;
@@ -811,19 +825,21 @@ $.fn.cycle.ver = function() { return ver; };
 
 // override these globally if you like (they are all optional)
 $.fn.cycle.defaults = {
-	fx:			  'fade', // name of transition effect (or comma separated names, ex: fade,scrollUp,shuffle)
+	fx:			  'fade', // name of transition effect (or comma separated names, ex: 'fade,scrollUp,shuffle')
 	timeout:	   4000,  // milliseconds between slide transitions (0 to disable auto advance)
 	timeoutFn:     null,  // callback for determining per-slide timeout value:  function(currSlideElement, nextSlideElement, options, forwardFlag)
 	continuous:	   0,	  // true to start next transition immediately after current one completes
 	speed:		   1000,  // speed of the transition (any valid fx speed value)
 	speedIn:	   null,  // speed of the 'in' transition
 	speedOut:	   null,  // speed of the 'out' transition
-	next:		   null,  // selector for element to use as click trigger for next slide
-	prev:		   null,  // selector for element to use as click trigger for previous slide
-	prevNextClick: null,  // callback fn for prev/next clicks:	function(isNext, zeroBasedSlideIndex, slideElement)
+	next:		   null,  // selector for element to use as event trigger for next slide
+	prev:		   null,  // selector for element to use as event trigger for previous slide
+//	prevNextClick: null,  // @deprecated; please use onPrevNextEvent instead
+	onPrevNextEvent: null,  // callback fn for prev/next events: function(isNext, zeroBasedSlideIndex, slideElement)
 	prevNextEvent:'click.cycle',// event which drives the manual transition to the previous or next slide
 	pager:		   null,  // selector for element to use as pager container
-	pagerClick:	   null,  // callback fn for pager clicks:	function(zeroBasedSlideIndex, slideElement)
+	//pagerClick   null,  // @deprecated; please use onPagerEvent instead
+	onPagerEvent:  null,  // callback fn for pager events: function(zeroBasedSlideIndex, slideElement)
 	pagerEvent:	  'click.cycle', // name of event which drives the pager navigation
 	allowPagerClickBubble: false, // allows or prevents click event on pager anchors from bubbling
 	pagerAnchorBuilder: null, // callback fn for building anchor links:  function(index, DOMelement)
