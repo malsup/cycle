@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.81 (19-MAR-2010)
+ * Version: 2.83 (24-MAR-2010)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = '2.81';
+var ver = '2.83';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -579,11 +579,11 @@ function go(els, opts, manual, fwd) {
 		// get ready to perform the transition
 		opts.busy = 1;
 		if (opts.fxFn) // fx function provided?
-			opts.fxFn(curr, next, opts, after, fwd);
+			opts.fxFn(curr, next, opts, after, fwd, manual && opts.fastOnEvent);
 		else if ($.isFunction($.fn.cycle[opts.fx])) // fx plugin ?
-			$.fn.cycle[opts.fx](curr, next, opts, after, manual && opts.fastOnEvent);
+			$.fn.cycle[opts.fx](curr, next, opts, after, fwd, manual && opts.fastOnEvent);
 		else
-			$.fn.cycle.custom(curr, next, opts, after, manual && opts.fastOnEvent);
+			$.fn.cycle.custom(curr, next, opts, after, fwd, manual && opts.fastOnEvent);
 	}
 
 	// calculate the next slide
@@ -617,9 +617,9 @@ function go(els, opts, manual, fwd) {
 
 // invoked after transition
 $.fn.cycle.updateActivePagerLink = function(pager, currSlide, clsName) {
-	$(pager).each(function() {
-		$(this).find('a').removeClass(clsName).filter('a:eq('+currSlide+')').addClass(clsName);
-	});
+   $(pager).each(function() {
+       $(this).children().removeClass(clsName).eq(currSlide).addClass(clsName);
+   });
 };
 
 // calculate timeout value for current transition
@@ -788,7 +788,7 @@ $.fn.cycle.commonReset = function(curr,next,opts,w,h,rev) {
 };
 
 // the actual fn for effecting a transition
-$.fn.cycle.custom = function(curr, next, opts, cb, speedOverride) {
+$.fn.cycle.custom = function(curr, next, opts, cb, fwd, speedOverride) {
 	var $l = $(curr), $n = $(next);
 	var speedIn = opts.speedIn, speedOut = opts.speedOut, easeIn = opts.easeIn, easeOut = opts.easeOut;
 	$n.css(opts.cssBefore);
