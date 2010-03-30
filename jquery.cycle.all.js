@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.83 (24-MAR-2010)
+ * Version: 2.84 (30-MAR-2010)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = '2.83';
+var ver = '2.84';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -535,7 +535,9 @@ function go(els, opts, manual, fwd) {
 	}
 
 	// if slideshow is paused, only transition on a manual trigger
+	var changed = false;
 	if ((manual || !p.cyclePause) && (opts.nextSlide != opts.currSlide)) {
+		changed = true;
 		var fx = opts.fx;
 		// keep trying to get the slide size if we don't have it yet
 		curr.cycleH = curr.cycleH || $(curr).height();
@@ -586,23 +588,25 @@ function go(els, opts, manual, fwd) {
 			$.fn.cycle.custom(curr, next, opts, after, fwd, manual && opts.fastOnEvent);
 	}
 
-	// calculate the next slide
-	opts.lastSlide = opts.currSlide;
-	if (opts.random) {
-		opts.currSlide = opts.nextSlide;
-		if (++opts.randomIndex == els.length)
-			opts.randomIndex = 0;
-		opts.nextSlide = opts.randomMap[opts.randomIndex];
-		if (opts.nextSlide == opts.currSlide)
-			opts.nextSlide = (opts.currSlide == opts.slideCount - 1) ? 0 : opts.currSlide + 1;
+	if (!p.cyclePause) {
+		// calculate the next slide
+		opts.lastSlide = opts.currSlide;
+		if (opts.random) {
+			opts.currSlide = opts.nextSlide;
+			if (++opts.randomIndex == els.length)
+				opts.randomIndex = 0;
+			opts.nextSlide = opts.randomMap[opts.randomIndex];
+			if (opts.nextSlide == opts.currSlide)
+				opts.nextSlide = (opts.currSlide == opts.slideCount - 1) ? 0 : opts.currSlide + 1;
+		}
+		else { // sequence
+			var roll = (opts.nextSlide + 1) == els.length;
+			opts.nextSlide = roll ? 0 : opts.nextSlide+1;
+			opts.currSlide = roll ? els.length-1 : opts.nextSlide-1;
+		}
 	}
-	else { // sequence
-		var roll = (opts.nextSlide + 1) == els.length;
-		opts.nextSlide = roll ? 0 : opts.nextSlide+1;
-		opts.currSlide = roll ? els.length-1 : opts.nextSlide-1;
-	}
-
-	if (opts.pager)
+	
+	if (changed && opts.pager)
 		opts.updateActivePagerLink(opts.pager, opts.currSlide, opts.activePagerClass);
 
 	// stage the next transition
