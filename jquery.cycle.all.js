@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.84 (30-MAR-2010)
+ * Version: 2.85 (30-MAR-2010)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = '2.84';
+var ver = '2.85';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -588,7 +588,7 @@ function go(els, opts, manual, fwd) {
 			$.fn.cycle.custom(curr, next, opts, after, fwd, manual && opts.fastOnEvent);
 	}
 
-	if (!p.cyclePause) {
+	if (changed || opts.nextSlide == opts.currSlide) {
 		// calculate the next slide
 		opts.lastSlide = opts.currSlide;
 		if (opts.random) {
@@ -605,10 +605,9 @@ function go(els, opts, manual, fwd) {
 			opts.currSlide = roll ? els.length-1 : opts.nextSlide-1;
 		}
 	}
-	
 	if (changed && opts.pager)
 		opts.updateActivePagerLink(opts.pager, opts.currSlide, opts.activePagerClass);
-
+	
 	// stage the next transition
 	var ms = 0;
 	if (opts.timeout && !opts.continuous)
