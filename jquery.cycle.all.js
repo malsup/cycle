@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.85 (30-MAR-2010)
+ * Version: 2.86 (05-APR-2010)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = '2.85';
+var ver = '2.86';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -116,24 +116,14 @@ function handleArguments(cont, options, arg2) {
 			return false;
 		case 'toggle':
 			cont.cyclePause = (cont.cyclePause === 1) ? 0 : 1;
+			checkInstantResume(cont.cyclePause, arg2, cont);
 			return false;
 		case 'pause':
 			cont.cyclePause = 1;
 			return false;
 		case 'resume':
 			cont.cyclePause = 0;
-			if (arg2 === true) { // resume now!
-				options = $(cont).data('cycle.opts');
-				if (!options) {
-					log('options not found, can not resume');
-					return false;
-				}
-				if (cont.cycleTimeout) {
-					clearTimeout(cont.cycleTimeout);
-					cont.cycleTimeout = 0;
-				}
-				go(options.elements, options, 1, 1);
-			}
+			checkInstantResume(false, arg2, cont);
 			return false;
 		case 'prev':
 		case 'next':
@@ -172,6 +162,21 @@ function handleArguments(cont, options, arg2) {
 		return false;
 	}
 	return options;
+	
+	function checkInstantResume(isPaused, arg2, cont) {
+		if (!isPaused && arg2 === true) { // resume now!
+			var options = $(cont).data('cycle.opts');
+			if (!options) {
+				log('options not found, can not resume');
+				return false;
+			}
+			if (cont.cycleTimeout) {
+				clearTimeout(cont.cycleTimeout);
+				cont.cycleTimeout = 0;
+			}
+			go(options.elements, options, 1, 1);
+		}
+	}
 };
 
 function removeFilter(el, opts) {
