@@ -2,15 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.86 (05-APR-2010)
- * Dual licensed under the MIT and GPL licenses:
- * http://www.opensource.org/licenses/mit-license.php
- * http://www.gnu.org/licenses/gpl.html
+ * Version: 2.88 (08-JUN-2010)
+ * Dual licensed under the MIT and GPL licenses.
+ * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.2.6 or later
  */
 ;(function($) {
 
-var ver = '2.86';
+var ver = '2.88';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -80,7 +79,7 @@ $.fn.cycle = function(options, arg2) {
 		if (opts2 === false)
 			return;
 
-		var startTime = opts2.continuous ? 10 : getTimeout(opts2.currSlide, opts2.nextSlide, opts2, !opts2.rev);
+		var startTime = opts2.continuous ? 10 : getTimeout(els[opts2.currSlide], els[opts2.nextSlide], opts2, !opts2.rev);
 
 		// if it's an auto slideshow, kick it off
 		if (startTime) {
@@ -88,7 +87,7 @@ $.fn.cycle = function(options, arg2) {
 			if (startTime < 10)
 				startTime = 10;
 			debug('first timeout: ' + startTime);
-			this.cycleTimeout = setTimeout(function(){go(els,opts2,0,!opts2.rev)}, startTime);
+			this.cycleTimeout = setTimeout(function(){go(els,opts2,0,(!opts2.rev && !opts.backwards))}, startTime);
 		}
 	});
 };
@@ -174,7 +173,7 @@ function handleArguments(cont, options, arg2) {
 				clearTimeout(cont.cycleTimeout);
 				cont.cycleTimeout = 0;
 			}
-			go(options.elements, options, 1, 1);
+			go(options.elements, options, 1, (!opts.rev && !opts.backwards));
 		}
 	}
 };
@@ -222,7 +221,7 @@ function buildOptions($cont, $slides, els, options, o) {
 	if (!$.support.opacity && opts.cleartype)
 		opts.after.push(function() { removeFilter(this, opts); });
 	if (opts.continuous)
-		opts.after.push(function() { go(els,opts,0,!opts.rev); });
+		opts.after.push(function() { go(els,opts,0,(!opts.rev && !opts.backwards)); });
 
 	saveOriginalOpts(opts);
 
@@ -240,6 +239,8 @@ function buildOptions($cont, $slides, els, options, o) {
 
 	if (opts.startingSlide)
 		opts.startingSlide = parseInt(opts.startingSlide);
+	else if (opts.backwards)
+		opts.startingSlide = els.length - 1;
 
 	// if random, mix up the slide array
 	if (opts.random) {
@@ -257,7 +258,11 @@ function buildOptions($cont, $slides, els, options, o) {
 
 	// set position and zIndex on all the slides
 	$slides.css({position: 'absolute', top:0, left:0}).hide().each(function(i) {
-		var z = first ? i >= first ? els.length - (i-first) : first-i : els.length-i;
+		var z;
+		if (opts.backwards)
+			z = first ? i <= first ? els.length + (i-first) : first-i : els.length-i;
+		else
+			z = first ? i >= first ? els.length - (i-first) : first-i : els.length-i;
 		$(this).css('z-index', z)
 	});
 
@@ -363,6 +368,8 @@ function buildOptions($cont, $slides, els, options, o) {
 			opts.randomIndex = 0;
 		opts.nextSlide = opts.randomMap[opts.randomIndex];
 	}
+	else if (opts.backwards)
+		opts.nextSlide = opts.startingSlide == 0 ? (els.length-1) : opts.startingSlide-1;
 	else
 		opts.nextSlide = opts.startingSlide >= (els.length-1) ? 0 : opts.startingSlide+1;
 
@@ -531,7 +538,7 @@ function go(els, opts, manual, fwd) {
 		return;
 
 	// check to see if we should stop cycling based on autostop options
-	if (!manual && !p.cyclePause &&
+	if (!manual && !p.cyclePause && !opts.bounce &&
 		((opts.autostop && (--opts.countdown <= 0)) ||
 		(opts.nowrap && !opts.random && opts.nextSlide < opts.currSlide))) {
 		if (opts.end)
@@ -604,10 +611,29 @@ function go(els, opts, manual, fwd) {
 			if (opts.nextSlide == opts.currSlide)
 				opts.nextSlide = (opts.currSlide == opts.slideCount - 1) ? 0 : opts.currSlide + 1;
 		}
+		else if (opts.backwards) {
+			var roll = (opts.nextSlide - 1) < 0;
+			if (roll && opts.bounce) {
+				opts.backwards = !opts.backwards;
+				opts.nextSlide = 1;
+				opts.currSlide = 0;
+			}
+			else {
+				opts.nextSlide = roll ? (els.length-1) : opts.nextSlide-1;
+				opts.currSlide = roll ? 0 : opts.nextSlide+1;
+			}
+		}
 		else { // sequence
 			var roll = (opts.nextSlide + 1) == els.length;
-			opts.nextSlide = roll ? 0 : opts.nextSlide+1;
-			opts.currSlide = roll ? els.length-1 : opts.nextSlide-1;
+			if (roll && opts.bounce) {
+				opts.backwards = !opts.backwards;
+				opts.nextSlide = els.length-2;
+				opts.currSlide = els.length-1;
+			}
+			else {
+				opts.nextSlide = roll ? 0 : opts.nextSlide+1;
+				opts.currSlide = roll ? els.length-1 : opts.nextSlide-1;
+			}
 		}
 	}
 	if (changed && opts.pager)
@@ -616,11 +642,11 @@ function go(els, opts, manual, fwd) {
 	// stage the next transition
 	var ms = 0;
 	if (opts.timeout && !opts.continuous)
-		ms = getTimeout(curr, next, opts, fwd);
+		ms = getTimeout(els[opts.currSlide], els[opts.nextSlide], opts, fwd);
 	else if (opts.continuous && p.cyclePause) // continuous shows work off an after callback, not this timer logic
 		ms = 10;
 	if (ms > 0)
-		p.cycleTimeout = setTimeout(function(){ go(els, opts, 0, !opts.rev) }, ms);
+		p.cycleTimeout = setTimeout(function(){ go(els, opts, 0, (!opts.rev && !opts.backwards)) }, ms);
 };
 
 // invoked after transition
@@ -634,7 +660,7 @@ $.fn.cycle.updateActivePagerLink = function(pager, currSlide, clsName) {
 function getTimeout(curr, next, opts, fwd) {
 	if (opts.timeoutFn) {
 		// call user provided calc fn
-		var t = opts.timeoutFn(curr,next,opts,fwd);
+		var t = opts.timeoutFn.call(curr,curr,next,opts,fwd);
 		while ((t - opts.speed) < 250) // sanitize timeout
 			t += opts.speed;
 		debug('calculated timeout: ' + t + '; speed: ' + opts.speed);
@@ -885,7 +911,8 @@ $.fn.cycle.defaults = {
 	requeueOnImageNotLoaded: true, // requeue the slideshow if any image slides are not yet loaded
 	requeueTimeout: 250,  // ms delay for requeue
 	activePagerClass: 'activeSlide', // class name used for the active pager link
-	updateActivePagerLink: null // callback fn invoked to update the active pager link (adds/removes activePagerClass style)
+	updateActivePagerLink: null, // callback fn invoked to update the active pager link (adds/removes activePagerClass style)
+	backwards:     false  // true to start slideshow at last slide and move backwards through the stack
 };
 
 })(jQuery);
@@ -895,7 +922,7 @@ $.fn.cycle.defaults = {
  * jQuery Cycle Plugin Transition Definitions
  * This script is a plugin for the jQuery Cycle Plugin
  * Examples and documentation at: http://malsup.com/jquery/cycle/
- * Copyright (c) 2007-2008 M. Alsup
+ * Copyright (c) 2007-2010 M. Alsup
  * Version:	 2.72
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
