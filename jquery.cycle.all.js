@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.88 (08-JUN-2010)
+ * Version: 2.89 (02-AUG-2010)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.2.6 or later
  */
 ;(function($) {
 
-var ver = '2.88';
+var ver = '2.89';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -173,7 +173,7 @@ function handleArguments(cont, options, arg2) {
 				clearTimeout(cont.cycleTimeout);
 				cont.cycleTimeout = 0;
 			}
-			go(options.elements, options, 1, (!opts.rev && !opts.backwards));
+			go(options.elements, options, 1, (!options.rev && !options.backwards));
 		}
 	}
 };
