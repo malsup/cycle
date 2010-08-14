@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.89 (02-AUG-2010)
+ * Version: 2.90 (14-AUG-2010)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.2.6 or later
  */
 ;(function($) {
 
-var ver = '2.89';
+var ver = '2.90';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -482,7 +482,7 @@ function exposeAddSlide(opts, els) {
 		if (opts.fit && opts.width)
 			$s.width(opts.width);
 		if (opts.fit && opts.height && opts.height != 'auto')
-			$slides.height(opts.height);
+			$s.height(opts.height);
 		s.cycleH = (opts.fit && opts.height) ? opts.height : $s.height();
 		s.cycleW = (opts.fit && opts.width) ? opts.width : $s.width();
 
@@ -1080,6 +1080,7 @@ $.fn.cycle.transitions.turnUp = function($cont, $slides, opts) {
 		$.fn.cycle.commonReset(curr,next,opts,true,false);
 		opts.cssBefore.top = next.cycleH;
 		opts.animIn.height = next.cycleH;
+		opts.animOut.width = next.cycleW;
 	});
 	opts.cssFirst  = { top: 0 };
 	opts.cssBefore = { left: 0, height: 0 };
