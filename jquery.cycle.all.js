@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.90 (14-AUG-2010)
+ * Version: 2.91 (15-AUG-2010)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.2.6 or later
@@ -392,9 +392,9 @@ function buildOptions($cont, $slides, els, options, o) {
 		opts.after[1].apply(e0, [e0, e0, opts, true]);
 
 	if (opts.next)
-		$(opts.next).bind(opts.prevNextEvent,function(){return advance(opts,opts.rev?-1:1)});
+		$(opts.next).bind(opts.prevNextEvent,function(){return advance(opts,1)});
 	if (opts.prev)
-		$(opts.prev).bind(opts.prevNextEvent,function(){return advance(opts,opts.rev?1:-1)});
+		$(opts.prev).bind(opts.prevNextEvent,function(){return advance(opts,0)});
 	if (opts.pager || opts.pagerAnchorBuilder)
 		buildPager(els,opts);
 
@@ -671,11 +671,12 @@ function getTimeout(curr, next, opts, fwd) {
 };
 
 // expose next/prev function, caller must pass in state
-$.fn.cycle.next = function(opts) { advance(opts, opts.rev?-1:1); };
-$.fn.cycle.prev = function(opts) { advance(opts, opts.rev?1:-1);};
+$.fn.cycle.next = function(opts) { advance(opts,1); };
+$.fn.cycle.prev = function(opts) { advance(opts,0);};
 
 // advance slide forward or back
-function advance(opts, val) {
+function advance(opts, moveForward) {
+	var val = moveForward ? 1 : -1;
 	var els = opts.elements;
 	var p = opts.$cont[0], timeout = p.cycleTimeout;
 	if (timeout) {
@@ -709,7 +710,7 @@ function advance(opts, val) {
 	var cb = opts.onPrevNextEvent || opts.prevNextClick; // prevNextClick is deprecated
 	if ($.isFunction(cb))
 		cb(val > 0, opts.nextSlide, els[opts.nextSlide]);
-	go(els, opts, 1, val>=0);
+	go(els, opts, 1, moveForward);
 	return false;
 };
 
@@ -983,6 +984,8 @@ $.fn.cycle.transitions.scrollRight = function($cont, $slides, opts) {
 $.fn.cycle.transitions.scrollHorz = function($cont, $slides, opts) {
 	$cont.css('overflow','hidden').width();
 	opts.before.push(function(curr, next, opts, fwd) {
+		if (opts.rev)
+			fwd = !fwd;
 		$.fn.cycle.commonReset(curr,next,opts);
 		opts.cssBefore.left = fwd ? (next.cycleW-1) : (1-next.cycleW);
 		opts.animOut.left = fwd ? -curr.cycleW : curr.cycleW;
@@ -995,6 +998,8 @@ $.fn.cycle.transitions.scrollHorz = function($cont, $slides, opts) {
 $.fn.cycle.transitions.scrollVert = function($cont, $slides, opts) {
 	$cont.css('overflow','hidden');
 	opts.before.push(function(curr, next, opts, fwd) {
+		if (opts.rev)
+			fwd = !fwd;
 		$.fn.cycle.commonReset(curr,next,opts);
 		opts.cssBefore.top = fwd ? (1-next.cycleH) : (next.cycleH-1);
 		opts.animOut.top = fwd ? curr.cycleH : -curr.cycleH;
