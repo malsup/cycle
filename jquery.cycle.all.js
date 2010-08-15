@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.91 (15-AUG-2010)
+ * Version: 2.92 (15-AUG-2010)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.2.6 or later
  */
 ;(function($) {
 
-var ver = '2.90';
+var ver = '2.92';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -79,7 +79,7 @@ $.fn.cycle = function(options, arg2) {
 		if (opts2 === false)
 			return;
 
-		var startTime = opts2.continuous ? 10 : getTimeout(els[opts2.currSlide], els[opts2.nextSlide], opts2, !opts2.rev);
+		var startTime = opts2.continuous ? 10 : getTimeout(els[opts2.currSlide], els[opts2.nextSlide], opts2, !opts2.backwards);
 
 		// if it's an auto slideshow, kick it off
 		if (startTime) {
@@ -87,7 +87,7 @@ $.fn.cycle = function(options, arg2) {
 			if (startTime < 10)
 				startTime = 10;
 			debug('first timeout: ' + startTime);
-			this.cycleTimeout = setTimeout(function(){go(els,opts2,0,(!opts2.rev && !opts.backwards))}, startTime);
+			this.cycleTimeout = setTimeout(function(){go(els,opts2,0,!opts.backwards)}, startTime);
 		}
 	});
 };
@@ -173,7 +173,7 @@ function handleArguments(cont, options, arg2) {
 				clearTimeout(cont.cycleTimeout);
 				cont.cycleTimeout = 0;
 			}
-			go(options.elements, options, 1, (!options.rev && !options.backwards));
+			go(options.elements, options, 1, !options.backwards);
 		}
 	}
 };
@@ -221,7 +221,7 @@ function buildOptions($cont, $slides, els, options, o) {
 	if (!$.support.opacity && opts.cleartype)
 		opts.after.push(function() { removeFilter(this, opts); });
 	if (opts.continuous)
-		opts.after.push(function() { go(els,opts,0,(!opts.rev && !opts.backwards)); });
+		opts.after.push(function() { go(els,opts,0,!opts.backwards); });
 
 	saveOriginalOpts(opts);
 
@@ -646,7 +646,7 @@ function go(els, opts, manual, fwd) {
 	else if (opts.continuous && p.cyclePause) // continuous shows work off an after callback, not this timer logic
 		ms = 10;
 	if (ms > 0)
-		p.cycleTimeout = setTimeout(function(){ go(els, opts, 0, (!opts.rev && !opts.backwards)) }, ms);
+		p.cycleTimeout = setTimeout(function(){ go(els, opts, 0, !opts.backwards) }, ms);
 };
 
 // invoked after transition
@@ -907,7 +907,7 @@ $.fn.cycle.defaults = {
 	nowrap:		   0,	  // true to prevent slideshow from wrapping
 	fastOnEvent:   0,	  // force fast transitions when triggered manually (via pager or prev/next); value == time in ms
 	randomizeEffects: 1,  // valid when multiple effects are used; true to make the effect sequence random
-	rev:		   0,	 // causes animations to transition in reverse
+	rev:		   0,	  // causes animations to transition in reverse (for effects that support it such as scrollHorz/scrollVert/shuffle)
 	manualTrump:   true,  // causes manual transition to stop an active transition instead of being ignored
 	requeueOnImageNotLoaded: true, // requeue the slideshow if any image slides are not yet loaded
 	requeueTimeout: 250,  // ms delay for requeue
@@ -1055,6 +1055,8 @@ $.fn.cycle.transitions.shuffle = function($cont, $slides, opts) {
 
 	// custom transition fn (hat tip to Benjamin Sterling for this bit of sweetness!)
 	opts.fxFn = function(curr, next, opts, cb, fwd) {
+		if (opts.rev)
+			fwd = !fwd;
 		var $el = fwd ? $(curr) : $(next);
 		$(next).css(opts.cssBefore);
 		var count = opts.slideCount;
