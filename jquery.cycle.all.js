@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.92 (15-AUG-2010)
+ * Version: 2.93 (17-DEC-2010)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.2.6 or later
  */
 ;(function($) {
 
-var ver = '2.92';
+var ver = '2.93';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -812,9 +812,9 @@ $.fn.cycle.commonReset = function(curr,next,opts,w,h,rev) {
 	$(opts.elements).not(curr).hide();
 	opts.cssBefore.opacity = 1;
 	opts.cssBefore.display = 'block';
-	if (w !== false && next.cycleW > 0)
+	if (opts.slideResize && w !== false && next.cycleW > 0)
 		opts.cssBefore.width = next.cycleW;
-	if (h !== false && next.cycleH > 0)
+	if (opts.slideResize && h !== false && next.cycleH > 0)
 		opts.cssBefore.height = next.cycleH;
 	opts.cssAfter = opts.cssAfter || {};
 	opts.cssAfter.display = 'none';
@@ -896,6 +896,7 @@ $.fn.cycle.defaults = {
 	random:		   0,	  // true for random, false for sequence (not applicable to shuffle fx)
 	fit:		   0,	  // force slides to fit container
 	containerResize: 1,	  // resize container to fit largest slide
+	slideResize:   1,     // force static slide dimensions
 	pause:		   0,	  // true to enable "pause on hover"
 	pauseOnPagerHover: 0, // true to pause when hovering over pager link
 	autostop:	   0,	  // true to end slideshow after X transitions (where X == slide count)
