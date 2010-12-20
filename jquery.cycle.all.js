@@ -9,7 +9,7 @@
  */
 ;(function($) {
 
-var ver = '2.93';
+var ver = '2.94';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -896,7 +896,7 @@ $.fn.cycle.defaults = {
 	random:		   0,	  // true for random, false for sequence (not applicable to shuffle fx)
 	fit:		   0,	  // force slides to fit container
 	containerResize: 1,	  // resize container to fit largest slide
-	slideResize:   1,     // force static slide dimensions
+	slideResize:   1,     // force slide width/height to fixed size before every transition
 	pause:		   0,	  // true to enable "pause on hover"
 	pauseOnPagerHover: 0, // true to pause when hovering over pager link
 	autostop:	   0,	  // true to end slideshow after X transitions (where X == slide count)
@@ -925,7 +925,7 @@ $.fn.cycle.defaults = {
  * This script is a plugin for the jQuery Cycle Plugin
  * Examples and documentation at: http://malsup.com/jquery/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version:	 2.72
+ * Version:	 2.73
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -944,6 +944,18 @@ $.fn.cycle.transitions.none = function($cont, $slides, opts) {
 		after();
 	};
 }
+// not a cross-fade, fadeout only fades out the top slide
+$.fn.cycle.transitions.fadeout = function($cont, $slides, opts) {
+	$slides.not(':eq('+opts.currSlide+')').css({ display: 'block', 'opacity': 1 });
+	opts.before.push(function(curr,next,opts,w,h,rev) {
+		$(curr).css('zIndex',opts.slideCount + (!rev === true ? 1 : 0));
+		$(next).css('zIndex',opts.slideCount + (!rev === true ? 0 : 1));
+	});
+	opts.animIn    = { opacity: 1 };
+	opts.animOut   = { opacity: 0 };
+	opts.cssBefore = { opacity: 1, display: 'block' };
+	opts.cssAfter  = { zIndex: 0 };
+};
 
 // scrollUp/Down/Left/Right
 $.fn.cycle.transitions.scrollUp = function($cont, $slides, opts) {
