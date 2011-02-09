@@ -25,7 +25,7 @@ function debug(s) {
 function log() {
 	if (window.console && window.console.log)
 		window.console.log('[cycle] ' + Array.prototype.join.call(arguments,' '));
-};
+}
 
 // the options arg can be...
 //   a number  - indicates an immediate transition should occur to the given slide index
@@ -282,7 +282,7 @@ function buildOptions($cont, $slides, els, options, o) {
 		var maxw = 0, maxh = 0;
 		for(var j=0; j < els.length; j++) {
 			var $e = $(els[j]), e = $e[0], w = $e.outerWidth(), h = $e.outerHeight();
-			if (!w) w = e.offsetWidth || e.width || $e.attr('width')
+			if (!w) w = e.offsetWidth || e.width || $e.attr('width');
 			if (!h) h = e.offsetHeight || e.height || $e.attr('height');
 			maxw = w > maxw ? w : maxw;
 			maxh = h > maxh ? h : maxh;
@@ -943,7 +943,7 @@ $.fn.cycle.transitions.none = function($cont, $slides, opts) {
 		$(curr).hide();
 		after();
 	};
-}
+};
 // not a cross-fade, fadeout only fades out the top slide
 $.fn.cycle.transitions.fadeout = function($cont, $slides, opts) {
 	$slides.not(':eq('+opts.currSlide+')').css({ display: 'block', 'opacity': 1 });
