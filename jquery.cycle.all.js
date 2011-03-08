@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.97 (14-FEB-2011)
+ * Version: 2.98 (08-MAR-2011)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
  */
 ;(function($) {
 
-var ver = '2.97';
+var ver = '2.98';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -798,7 +798,7 @@ function clearTypeFix($slides) {
 	function getBg(e) {
 		for ( ; e && e.nodeName.toLowerCase() != 'html'; e = e.parentNode) {
 			var v = $.css(e,'background-color');
-			if (v.indexOf('rgb') >= 0 ) {
+			if (v && v.indexOf('rgb') >= 0 ) {
 				var rgb = v.match(/\d+/g);
 				return '#'+ hex(rgb[0]) + hex(rgb[1]) + hex(rgb[2]);
 			}
