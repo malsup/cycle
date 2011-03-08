@@ -798,7 +798,7 @@ function clearTypeFix($slides) {
 	function getBg(e) {
 		for ( ; e && e.nodeName.toLowerCase() != 'html'; e = e.parentNode) {
 			var v = $.css(e,'background-color');
-			if (v.indexOf('rgb') >= 0 ) {
+			if (v && v.indexOf('rgb') >= 0 ) {
 				var rgb = v.match(/\d+/g);
 				return '#'+ hex(rgb[0]) + hex(rgb[1]) + hex(rgb[2]);
 			}
