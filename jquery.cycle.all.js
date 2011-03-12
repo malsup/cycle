@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.98 (08-MAR-2011)
+ * Version: 2.99 (12-MAR-2011)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
  */
 ;(function($) {
 
-var ver = '2.98';
+var ver = '2.99';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -390,8 +390,8 @@ function buildOptions($cont, $slides, els, options, o) {
 	var e0 = $slides[first];
 	if (opts.before.length)
 		opts.before[0].apply(e0, [e0, e0, opts, true]);
-	if (opts.after.length > 1)
-		opts.after[1].apply(e0, [e0, e0, opts, true]);
+	if (opts.after.length)
+		opts.after[0].apply(e0, [e0, e0, opts, true]);
 
 	if (opts.next)
 		$(opts.next).bind(opts.prevNextEvent,function(){return advance(opts,1)});
