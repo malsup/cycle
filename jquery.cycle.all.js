@@ -295,6 +295,20 @@ function buildOptions($cont, $slides, els, options, o) {
 		}
 	}
 
+	if (opts.center && ((!opts.fit) || opts.aspect)) {
+		$slides.each(function(){
+			var $slide = $(this);
+			$slide.css({
+				"margin-left": opts.width ?
+					((opts.width - $slide.width()) / 2) + "px" :
+					0,
+				"margin-top": opts.height ?
+					((opts.height - $slide.height()) / 2) + "px" :
+					0
+			});
+		});
+	}
+
 	// stretch container
 	var reshape = opts.containerResize && !$cont.innerHeight();
 	if (reshape) { // do this only if container has no size http://tinyurl.com/da2oa9
@@ -910,6 +924,7 @@ $.fn.cycle.defaults = {
 	fastOnEvent:   0,	  // force fast transitions when triggered manually (via pager or prev/next); value == time in ms
 	fit:		   0,	  // force slides to fit container
 	aspect:		   false  // preserve aspect ratio during "fit", cropping if necessary
+	center:		   false  // center the image. doesn't make sense with "fit" unless "aspect" is also given
 	fx:			  'fade', // name of transition effect (or comma separated names, ex: 'fade,scrollUp,shuffle')
 	fxFn:		   null,  // function used to control the transition: function(currSlideElement, nextSlideElement, options, afterCalback, forwardFlag)
 	height:		  'auto', // container height
