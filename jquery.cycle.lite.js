@@ -1,16 +1,16 @@
 /*
  * jQuery Cycle Lite Plugin
  * http://malsup.com/jquery/cycle/lite/
- * Copyright (c) 2008 M. Alsup
- * Version: 1.0 (06/08/2008)
+ * Copyright (c) 2008-2011 M. Alsup
+ * Version: 1.1 (03/07/2011)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
- * Requires: jQuery v1.2.3 or later
+ * Requires: jQuery v1.3.2 or later
  */
 ;(function($) {
 
-var ver = 'Lite-1.0';
+var ver = 'Lite-1.1';
 
 $.fn.cycle = function(options) {
     return this.each(function() {
@@ -24,8 +24,7 @@ $.fn.cycle = function(options) {
         var $slides = options.slideExpr ? $(options.slideExpr, this) : $cont.children();
         var els = $slides.get();
         if (els.length < 2) {
-            if (window.console && window.console.log)
-                window.console.log('terminating; too few slides: ' + els.length);
+            window.console && console.log('terminating; too few slides: ' + els.length);
             return; // don't bother
         }
 
@@ -50,7 +49,7 @@ $.fn.cycle = function(options) {
             $cont.height(opts.height);
 
         var first = 0;
-        $slides.css({position: 'absolute', top:0, left:0}).hide().each(function(i) { 
+        $slides.css({position: 'absolute', top:0, left:0}).each(function(i) { 
             $(this).css('z-index', els.length-i) 
         });
         
@@ -64,7 +63,8 @@ $.fn.cycle = function(options) {
         if (opts.pause) 
             $cont.hover(function(){this.cyclePause=1;}, function(){this.cyclePause=0;});
 
-        $.fn.cycle.transitions.fade($cont, $slides, opts);
+        var txFn = $.fn.cycle.transitions[opts.fx];
+		txFn && txFn($cont, $slides, opts);
         
         $slides.each(function() {
             var $el = $(this);
@@ -72,7 +72,6 @@ $.fn.cycle = function(options) {
             this.cycleW = (opts.fit && opts.width) ? opts.width : $el.width();
         });
 
-        $slides.not(':eq('+first+')').css({opacity:0});
         if (opts.cssFirst)
             $($slides[first]).css(opts.cssFirst);
 
@@ -160,10 +159,10 @@ function advance(els, opts, val) {
 
 $.fn.cycle.custom = function(curr, next, opts, cb) {
     var $l = $(curr), $n = $(next);
-    $n.css({opacity:0});
-    var fn = function() {$n.animate({opacity:1}, opts.speedIn, opts.easeIn, cb)};
-    $l.animate({opacity:0}, opts.speedOut, opts.easeOut, function() {
-        $l.css({display:'none'});
+    $n.css(opts.cssBefore);
+    var fn = function() {$n.animate(opts.animIn, opts.speedIn, opts.easeIn, cb)};
+    $l.animate(opts.animOut, opts.speedOut, opts.easeOut, function() {
+        $l.css(opts.cssAfter);
         if (!opts.sync) fn();
     });
     if (opts.sync) fn();
@@ -171,8 +170,9 @@ $.fn.cycle.custom = function(curr, next, opts, cb) {
 
 $.fn.cycle.transitions = {
     fade: function($cont, $slides, opts) {
-        $slides.not(':eq(0)').css('opacity',0);
-        opts.before.push(function() { $(this).show() });
+		opts.cssBefore = { opacity: 0 };
+		opts.animOut = { opacity: 0 };
+		opts.animIn = { opacity: 1 };
     }
 };
 
@@ -180,6 +180,7 @@ $.fn.cycle.ver = function() { return ver; };
 
 // @see: http://malsup.com/jquery/cycle/lite/
 $.fn.cycle.defaults = {
+	fx:           'fade',
     timeout:       4000, 
     speed:         1000, 
     next:          null, 
@@ -191,7 +192,11 @@ $.fn.cycle.defaults = {
     fit:           0,    
     pause:         0,    
     delay:         0,    
-    slideExpr:     null  
+    slideExpr:     null,
+	cssBefore:     {},
+	cssAfter:      {},
+	animIn:        {},
+	animOut:       {}
 };
 
 })(jQuery);
