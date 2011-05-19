@@ -2,7 +2,7 @@
  * jQuery Cycle Lite Plugin
  * http://malsup.com/jquery/cycle/lite/
  * Copyright (c) 2008-2011 M. Alsup
- * Version: 1.1 (03/07/2011)
+ * Version: 1.2 (05/18/2011)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = 'Lite-1.1';
+var ver = 'Lite-1.2';
 
 $.fn.cycle = function(options) {
     return this.each(function() {
@@ -170,9 +170,21 @@ $.fn.cycle.custom = function(curr, next, opts, cb) {
 
 $.fn.cycle.transitions = {
     fade: function($cont, $slides, opts) {
-		opts.cssBefore = { opacity: 0 };
+		$slides.not(':eq(0)').hide();
+		opts.cssBefore = { opacity: 0, display: 'block' };
+		opts.cssAfter  = { display: 'none' };
 		opts.animOut = { opacity: 0 };
 		opts.animIn = { opacity: 1 };
+    },
+    fadeout: function($cont, $slides, opts) {
+		opts.before.push(function(curr,next,opts,fwd) {
+			$(curr).css('zIndex',opts.slideCount + (fwd === true ? 1 : 0));
+			$(next).css('zIndex',opts.slideCount + (fwd === true ? 0 : 1));
+		});
+		$slides.not(':eq(0)').hide();
+		opts.cssBefore = { opacity: 1, display: 'block', zIndex: 1 };
+		opts.cssAfter  = { display: 'none', zIndex: 0 };
+		opts.animOut = { opacity: 0 };
     }
 };
 
