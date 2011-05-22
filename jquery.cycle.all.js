@@ -272,10 +272,42 @@ function buildOptions($cont, $slides, els, options, o) {
 	removeFilter(els[first], opts);
 
 	// stretch slides
-	if (opts.fit && opts.width)
-		$slides.width(opts.width);
-	if (opts.fit && opts.height && opts.height != 'auto')
-		$slides.height(opts.height);
+	if (opts.fit) {
+		if (!opts.aspect) {
+		        if (opts.width)
+		            $slides.width(opts.width);
+		        if (opts.height && opts.height != 'auto')
+		            $slides.height(opts.height);
+		} else {
+			$slides.each(function(){
+				var $slide = $(this);
+				var ratio = (opts.aspect === true) ? $slide.width()/$slide.height() : opts.aspect;
+				if( opts.width && $slide.width() != opts.width ) {
+					$slide.width( opts.width );
+					$slide.height( opts.width / ratio );
+				}
+
+				if( opts.height && $slide.height() < opts.height ) {
+					$slide.height( opts.height );
+					$slide.width( opts.height * ratio );
+				}
+			});
+		}
+	}
+
+	if (opts.center && ((!opts.fit) || opts.aspect)) {
+		$slides.each(function(){
+			var $slide = $(this);
+			$slide.css({
+				"margin-left": opts.width ?
+					((opts.width - $slide.width()) / 2) + "px" :
+					0,
+				"margin-top": opts.height ?
+					((opts.height - $slide.height()) / 2) + "px" :
+					0
+			});
+		});
+	}
 
 	// stretch container
 	var reshape = opts.containerResize && !$cont.innerHeight();
@@ -891,6 +923,8 @@ $.fn.cycle.defaults = {
 	end:		   null,  // callback invoked when the slideshow terminates (use with autostop or nowrap options): function(options)
 	fastOnEvent:   0,	  // force fast transitions when triggered manually (via pager or prev/next); value == time in ms
 	fit:		   0,	  // force slides to fit container
+	aspect:		   false  // preserve aspect ratio during "fit", cropping if necessary
+	center:		   false  // center the image. doesn't make sense with "fit" unless "aspect" is also given
 	fx:			  'fade', // name of transition effect (or comma separated names, ex: 'fade,scrollUp,shuffle')
 	fxFn:		   null,  // function used to control the transition: function(currSlideElement, nextSlideElement, options, afterCalback, forwardFlag)
 	height:		  'auto', // container height
