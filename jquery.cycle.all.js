@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.99 (12-MAR-2011)
+ * Version: 2.999 (23-MAY-2011)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
  */
 ;(function($) {
 
-var ver = '2.99';
+var ver = '2.999';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -72,14 +72,15 @@ $.fn.cycle = function(options, arg2) {
 		var $cont = $(this);
 		var $slides = opts.slideExpr ? $(opts.slideExpr, this) : $cont.children();
 		var els = $slides.get();
-		if (els.length < 2) {
-			log('terminating; too few slides: ' + els.length);
-			return;
-		}
 
 		var opts2 = buildOptions($cont, $slides, els, opts, o);
 		if (opts2 === false)
 			return;
+
+		if (els.length < 2) {
+			log('terminating; too few slides: ' + els.length);
+			return;
+		}
 
 		var startTime = opts2.continuous ? 10 : getTimeout(els[opts2.currSlide], els[opts2.nextSlide], opts2, !opts2.backwards);
 
@@ -207,6 +208,9 @@ function destroy(opts) {
 function buildOptions($cont, $slides, els, options, o) {
 	// support metadata plugin (v1.0 and v2.0)
 	var opts = $.extend({}, $.fn.cycle.defaults, options || {}, $.metadata ? $cont.metadata() : $.meta ? $cont.data() : {});
+	var meta = $.isFunction($cont.data) ? $cont.data(opts.metaAttr) : null;
+	if (meta)
+		opts = $.extend(opts, meta);
 	if (opts.autostop)
 		opts.countdown = opts.autostopCount || els.length;
 
@@ -277,6 +281,16 @@ function buildOptions($cont, $slides, els, options, o) {
 	if (opts.fit && opts.height && opts.height != 'auto')
 		$slides.height(opts.height);
 
+	if (opts.center && !opts.fit && !opts.slideResize) {
+	  	$slides.each(function(){
+	    	var $slide = $(this);
+	    	$slide.css({
+	      		"margin-left": opts.width ? ((opts.width - $slide.width()) / 2) + "px" : 0,
+	      		"margin-top": opts.height ? ((opts.height - $slide.height()) / 2) + "px" : 0
+	    	});
+	  	});
+	}
+		
 	// stretch container
 	var reshape = opts.containerResize && !$cont.innerHeight();
 	if (reshape) { // do this only if container has no size http://tinyurl.com/da2oa9
@@ -878,6 +892,7 @@ $.fn.cycle.defaults = {
 	autostopCount: 0,	  // number of transitions (optionally used with autostop to define X)
 	backwards:     false, // true to start slideshow at last slide and move backwards through the stack
 	before:		   null,  // transition callback (scope set to element to be shown):	 function(currSlideElement, nextSlideElement, options, forwardFlag)
+	center: 	   null,  // set to true to have cycle add top/left margin to each slide (use with width and height options)
 	cleartype:	   !$.support.opacity,  // true if clearType corrections should be applied (for IE)
 	cleartypeNoBg: false, // set to true to disable extra cleartype fixing (leave false to force background color setting on slides)
 	containerResize: 1,	  // resize container to fit largest slide
@@ -893,12 +908,13 @@ $.fn.cycle.defaults = {
 	fit:		   0,	  // force slides to fit container
 	fx:			  'fade', // name of transition effect (or comma separated names, ex: 'fade,scrollUp,shuffle')
 	fxFn:		   null,  // function used to control the transition: function(currSlideElement, nextSlideElement, options, afterCalback, forwardFlag)
-	height:		  'auto', // container height
+	height:		  'auto', // container height (if the 'fit' option is true, the slides will be set to this height as well)
 	manualTrump:   true,  // causes manual transition to stop an active transition instead of being ignored
+	metaAttr:     'cycle',// data- attribute that holds the option data for the slideshow
 	next:		   null,  // selector for element to use as event trigger for next slide
 	nowrap:		   0,	  // true to prevent slideshow from wrapping
 	onPagerEvent:  null,  // callback fn for pager events: function(zeroBasedSlideIndex, slideElement)
-	onPrevNextEvent: null,  // callback fn for prev/next events: function(isNext, zeroBasedSlideIndex, slideElement)
+	onPrevNextEvent: null,// callback fn for prev/next events: function(isNext, zeroBasedSlideIndex, slideElement)
 	pager:		   null,  // selector for element to use as pager container
 	pagerAnchorBuilder: null, // callback fn for building anchor links:  function(index, DOMelement)
 	pagerEvent:	  'click.cycle', // name of event which drives the pager navigation
@@ -921,7 +937,8 @@ $.fn.cycle.defaults = {
 	sync:		   1,	  // true if in/out transitions should occur simultaneously
 	timeout:	   4000,  // milliseconds between slide transitions (0 to disable auto advance)
 	timeoutFn:     null,  // callback for determining per-slide timeout value:  function(currSlideElement, nextSlideElement, options, forwardFlag)
-	updateActivePagerLink: null // callback fn invoked to update the active pager link (adds/removes activePagerClass style)
+	updateActivePagerLink: null, // callback fn invoked to update the active pager link (adds/removes activePagerClass style)
+	width:         null   // container width (if the 'fit' option is true, the slides will be set to this width as well)
 };
 
 })(jQuery);
