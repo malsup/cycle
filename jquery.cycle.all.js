@@ -9,7 +9,7 @@
  */
 ;(function($) {
 
-var ver = '2.999';
+var ver = '2.9991';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -278,10 +278,10 @@ function buildOptions($cont, $slides, els, options, o) {
 	// stretch slides
 	if (opts.fit) {
 		if (!opts.aspect) {
-		        if (opts.width)
-		            $slides.width(opts.width);
-		        if (opts.height && opts.height != 'auto')
-		            $slides.height(opts.height);
+	        if (opts.width)
+	            $slides.width(opts.width);
+	        if (opts.height && opts.height != 'auto')
+	            $slides.height(opts.height);
 		} else {
 			$slides.each(function(){
 				var $slide = $(this);
@@ -920,6 +920,7 @@ $.fn.cycle.defaults = {
 	allowPagerClickBubble: false, // allows or prevents click event on pager anchors from bubbling
 	animIn:		   null,  // properties that define how the slide animates in
 	animOut:	   null,  // properties that define how the slide animates out
+	aspect:		   false  // preserve aspect ratio during fit resizing, cropping if necessary (must be used with fit option)
 	autostop:	   0,	  // true to end slideshow after X transitions (where X == slide count)
 	autostopCount: 0,	  // number of transitions (optionally used with autostop to define X)
 	backwards:     false, // true to start slideshow at last slide and move backwards through the stack
@@ -938,7 +939,6 @@ $.fn.cycle.defaults = {
 	end:		   null,  // callback invoked when the slideshow terminates (use with autostop or nowrap options): function(options)
 	fastOnEvent:   0,	  // force fast transitions when triggered manually (via pager or prev/next); value == time in ms
 	fit:		   0,	  // force slides to fit container
-	aspect:		   false  // preserve aspect ratio during "fit", cropping if necessary
 	center:		   false  // center the image. doesn't make sense with "fit" unless "aspect" is also given
 	fx:			  'fade', // name of transition effect (or comma separated names, ex: 'fade,scrollUp,shuffle')
 	fxFn:		   null,  // function used to control the transition: function(currSlideElement, nextSlideElement, options, afterCalback, forwardFlag)
