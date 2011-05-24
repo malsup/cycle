@@ -939,7 +939,6 @@ $.fn.cycle.defaults = {
 	end:		   null,  // callback invoked when the slideshow terminates (use with autostop or nowrap options): function(options)
 	fastOnEvent:   0,	  // force fast transitions when triggered manually (via pager or prev/next); value == time in ms
 	fit:		   0,	  // force slides to fit container
-	center:		   false  // center the image. doesn't make sense with "fit" unless "aspect" is also given
 	fx:			  'fade', // name of transition effect (or comma separated names, ex: 'fade,scrollUp,shuffle')
 	fxFn:		   null,  // function used to control the transition: function(currSlideElement, nextSlideElement, options, afterCalback, forwardFlag)
 	height:		  'auto', // container height (if the 'fit' option is true, the slides will be set to this height as well)
