@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.999 (23-MAY-2011)
+ * Version: 2.9992 (23-MAY-2011)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
  */
 ;(function($) {
 
-var ver = '2.9991';
+var ver = '2.9992';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -920,7 +920,7 @@ $.fn.cycle.defaults = {
 	allowPagerClickBubble: false, // allows or prevents click event on pager anchors from bubbling
 	animIn:		   null,  // properties that define how the slide animates in
 	animOut:	   null,  // properties that define how the slide animates out
-	aspect:		   false  // preserve aspect ratio during fit resizing, cropping if necessary (must be used with fit option)
+	aspect:		   false,  // preserve aspect ratio during fit resizing, cropping if necessary (must be used with fit option)
 	autostop:	   0,	  // true to end slideshow after X transitions (where X == slide count)
 	autostopCount: 0,	  // number of transitions (optionally used with autostop to define X)
 	backwards:     false, // true to start slideshow at last slide and move backwards through the stack
