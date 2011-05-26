@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.9992 (23-MAY-2011)
+ * Version: 2.9993 (26-MAY-2011)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
@@ -95,6 +95,15 @@ $.fn.cycle = function(options, arg2) {
 	});
 };
 
+function triggerPause(cont, byHover, onPager) {
+	var opts = $(cont).data('cycle.opts');
+	var paused = !!cont.cyclePause;
+	if (paused && opts.paused)
+		opts.paused(cont, opts, byHover, onPager);
+	else if (!paused && opts.resumed)
+		opts.resumed(cont, opts, byHover, onPager);
+}
+
 // process the args that were passed to the plugin fn
 function handleArguments(cont, options, arg2) {
 	if (cont.cycleStop == undefined)
@@ -119,13 +128,16 @@ function handleArguments(cont, options, arg2) {
 		case 'toggle':
 			cont.cyclePause = (cont.cyclePause === 1) ? 0 : 1;
 			checkInstantResume(cont.cyclePause, arg2, cont);
+			triggerPause(cont);
 			return false;
 		case 'pause':
 			cont.cyclePause = 1;
+			triggerPause(cont);
 			return false;
 		case 'resume':
 			cont.cyclePause = 0;
 			checkInstantResume(false, arg2, cont);
+			triggerPause(cont);
 			return false;
 		case 'prev':
 		case 'next':
@@ -339,7 +351,16 @@ function buildOptions($cont, $slides, els, options, o) {
 	}
 
 	if (opts.pause)
-		$cont.hover(function(){this.cyclePause++;},function(){this.cyclePause--;});
+		$cont.hover(
+			function(){
+				this.cyclePause++;
+				triggerPause(cont, true);
+			},
+			function(){
+				this.cyclePause--;
+				triggerPause(cont, true);
+			}
+		);
 
 	if (supportMultiTransitions(opts) === false)
 		return false;
@@ -609,7 +630,7 @@ function go(els, opts, manual, fwd) {
 		if (opts.multiFx) {
 			if (fwd && (opts.lastFx == undefined || ++opts.lastFx >= opts.fxs.length))
 				opts.lastFx = 0;
-			else if (!fwd && (opts.lastFx == undefined || --opts.lastFx < 0)
+			else if (!fwd && (opts.lastFx == undefined || --opts.lastFx < 0))
 				opts.lastFx = opts.fxs.length - 1;
 			fx = opts.fxs[opts.lastFx];
 		}
@@ -820,8 +841,17 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 	if ( ! /^click/.test(opts.pagerEvent) && !opts.allowPagerClickBubble)
 		$a.bind('click.cycle', function(){return false;}); // suppress click
 	
-	if (opts.pauseOnPagerHover)
-		$a.hover(function() { opts.$cont[0].cyclePause++; }, function() { opts.$cont[0].cyclePause--; } );
+	if (opts.pauseOnPagerHover) {
+		$a.hover(
+			function() { 
+				opts.$cont[0].cyclePause++; 
+				triggerPause(cont,true,true);
+			}, function() { 
+				opts.$cont[0].cyclePause--; 
+				triggerPause(cont,true,true);
+			} 
+		);
+	}
 };
 
 // helper fn to calculate the number of slides between the current and the next
