@@ -607,10 +607,11 @@ function go(els, opts, manual, fwd) {
 
 		// support multiple transition types
 		if (opts.multiFx) {
-			if (opts.lastFx == undefined || ++opts.lastFx >= opts.fxs.length)
+			if (fwd && (opts.lastFx == undefined || ++opts.lastFx >= opts.fxs.length))
 				opts.lastFx = 0;
+			else if (!fwd && (opts.lastFx == undefined || --opts.lastFx < 0)
+				opts.lastFx = opts.fxs.length - 1;
 			fx = opts.fxs[opts.lastFx];
-			opts.currFx = fx;
 		}
 
 		// one-time fx overrides apply to:  $('div').cycle(3,'zoom');
