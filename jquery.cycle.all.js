@@ -979,16 +979,16 @@ $.fn.cycle.defaults = {
 	height:		  'auto', // container height (if the 'fit' option is true, the slides will be set to this height as well)
 	manualTrump:   true,  // causes manual transition to stop an active transition instead of being ignored
 	metaAttr:     'cycle',// data- attribute that holds the option data for the slideshow
-	next:		   null,  // selector for element to use as event trigger for next slide
+	next:		   null,  // element, jQuery object, or jQuery selector string for the element to use as event trigger for next slide
 	nowrap:		   0,	  // true to prevent slideshow from wrapping
 	onPagerEvent:  null,  // callback fn for pager events: function(zeroBasedSlideIndex, slideElement)
 	onPrevNextEvent: null,// callback fn for prev/next events: function(isNext, zeroBasedSlideIndex, slideElement)
-	pager:		   null,  // selector for element to use as pager container
+	pager:		   null,  // element, jQuery object, or jQuery selector string for the element to use as pager container
 	pagerAnchorBuilder: null, // callback fn for building anchor links:  function(index, DOMelement)
 	pagerEvent:	  'click.cycle', // name of event which drives the pager navigation
 	pause:		   0,	  // true to enable "pause on hover"
 	pauseOnPagerHover: 0, // true to pause when hovering over pager link
-	prev:		   null,  // selector for element to use as event trigger for previous slide
+	prev:		   null,  // element, jQuery object, or jQuery selector string for the element to use as event trigger for previous slide
 	prevNextEvent:'click.cycle',// event which drives the manual transition to the previous or next slide
 	random:		   0,	  // true for random, false for sequence (not applicable to shuffle fx)
 	randomizeEffects: 1,  // valid when multiple effects are used; true to make the effect sequence random
