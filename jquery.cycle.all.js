@@ -121,6 +121,7 @@ function handleArguments(cont, options, arg2) {
 			if (cont.cycleTimeout)
 				clearTimeout(cont.cycleTimeout);
 			cont.cycleTimeout = 0;
+			opts.elements && $(opts.elements).stop();
 			$(cont).removeData('cycle.opts');
 			if (options == 'destroy')
 				destroy(opts);
