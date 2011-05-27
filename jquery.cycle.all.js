@@ -457,11 +457,12 @@ function buildOptions($cont, $slides, els, options, o) {
 
 	// fire artificial events
 	var e0 = $slides[first];
-	if (opts.before.length)
-		opts.before[0].apply(e0, [e0, e0, opts, true]);
-	if (opts.after.length)
-		opts.after[0].apply(e0, [e0, e0, opts, true]);
-
+	if (!opts.skipInitializationCallbacks) {
+		if (opts.before.length)
+			opts.before[0].apply(e0, [e0, e0, opts, true]);
+		if (opts.after.length)
+			opts.after[0].apply(e0, [e0, e0, opts, true]);
+	}
 	if (opts.next)
 		$(opts.next).bind(opts.prevNextEvent,function(){return advance(opts,1)});
 	if (opts.prev)
@@ -996,6 +997,7 @@ $.fn.cycle.defaults = {
 	requeueTimeout: 250,  // ms delay for requeue
 	rev:		   0,	  // causes animations to transition in reverse (for effects that support it such as scrollHorz/scrollVert/shuffle)
 	shuffle:	   null,  // coords for shuffle animation, ex: { top:15, left: 200 }
+	skipInitializationCallbacks: false, // set to true to disable the first before/after callback that occurs prior to any transition
 	slideExpr:	   null,  // expression for selecting slides (if something other than all children is required)
 	slideResize:   1,     // force slide width/height to fixed size before every transition
 	speed:		   1000,  // speed of the transition (any valid fx speed value)
