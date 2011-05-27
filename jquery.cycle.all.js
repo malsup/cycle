@@ -350,14 +350,16 @@ function buildOptions($cont, $slides, els, options, o) {
 			$cont.css({width:maxw+'px',height:maxh+'px'});
 	}
 
+	var pauseFlag = false;  // https://github.com/malsup/cycle/issues/44
 	if (opts.pause)
 		$cont.hover(
 			function(){
+				pauseFlag = true;
 				this.cyclePause++;
 				triggerPause(cont, true);
 			},
 			function(){
-				this.cyclePause--;
+				pauseFlag && this.cyclePause--;
 				triggerPause(cont, true);
 			}
 		);
@@ -841,13 +843,15 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 	if ( ! /^click/.test(opts.pagerEvent) && !opts.allowPagerClickBubble)
 		$a.bind('click.cycle', function(){return false;}); // suppress click
 	
+	var pauseFlag = false; // https://github.com/malsup/cycle/issues/44
 	if (opts.pauseOnPagerHover) {
 		$a.hover(
 			function() { 
+				pauseFlag = true;
 				opts.$cont[0].cyclePause++; 
 				triggerPause(cont,true,true);
 			}, function() { 
-				opts.$cont[0].cyclePause--; 
+				pauseFlag && opts.$cont[0].cyclePause--; 
 				triggerPause(cont,true,true);
 			} 
 		);
