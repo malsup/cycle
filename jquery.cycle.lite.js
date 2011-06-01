@@ -2,7 +2,7 @@
  * jQuery Cycle Lite Plugin
  * http://malsup.com/jquery/cycle/lite/
  * Copyright (c) 2008-2011 M. Alsup
- * Version: 1.2 (05/18/2011)
+ * Version: 1.3 (01-JUN-2011)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = 'Lite-1.2';
+var ver = 'Lite-1.3';
 
 $.fn.cycle = function(options) {
     return this.each(function() {
@@ -30,6 +30,9 @@ $.fn.cycle = function(options) {
 
         // support metadata plugin (v1.0 and v2.0)
         var opts = $.extend({}, $.fn.cycle.defaults, options || {}, $.metadata ? $cont.metadata() : $.meta ? $cont.data() : {});
+		var meta = $.isFunction($cont.data) ? $cont.data(opts.metaAttr) : null;
+		if (meta)
+			opts = $.extend(opts, meta);
             
         opts.before = opts.before ? [opts.before] : [];
         opts.after = opts.after ? [opts.after] : [];
@@ -192,23 +195,24 @@ $.fn.cycle.ver = function() { return ver; };
 
 // @see: http://malsup.com/jquery/cycle/lite/
 $.fn.cycle.defaults = {
+	animIn:        {},
+	animOut:       {},
 	fx:           'fade',
-    timeout:       4000, 
-    speed:         1000, 
-    next:          null, 
-    prev:          null, 
-    before:        null, 
     after:         null, 
-    height:       'auto',
-    sync:          1,    
-    fit:           0,    
-    pause:         0,    
-    delay:         0,    
-    slideExpr:     null,
+    before:        null, 
 	cssBefore:     {},
 	cssAfter:      {},
-	animIn:        {},
-	animOut:       {}
+    delay:         0,    
+    fit:           0,    
+    height:       'auto',
+	metaAttr:     'cycle',
+    next:          null, 
+    pause:         0,    
+    prev:          null, 
+    speed:         1000, 
+    slideExpr:     null,
+    sync:          1,    
+    timeout:       4000 
 };
 
 })(jQuery);
