@@ -845,15 +845,16 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 	if ( ! /^click/.test(opts.pagerEvent) && !opts.allowPagerClickBubble)
 		$a.bind('click.cycle', function(){return false;}); // suppress click
 	
+	var cont = opts.$cont[0];
 	var pauseFlag = false; // https://github.com/malsup/cycle/issues/44
 	if (opts.pauseOnPagerHover) {
 		$a.hover(
 			function() { 
 				pauseFlag = true;
-				opts.$cont[0].cyclePause++; 
+				cont.cyclePause++; 
 				triggerPause(cont,true,true);
 			}, function() { 
-				pauseFlag && opts.$cont[0].cyclePause--; 
+				pauseFlag && cont.cyclePause--; 
 				triggerPause(cont,true,true);
 			} 
 		);
