@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.9994 (28-JUL-2011)
+ * Version: 2.9995 (09-AUG-2011)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
  */
 ;(function($) {
 
-var ver = '2.9994';
+var ver = '2.9995';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -827,7 +827,8 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 
 	opts.pagerAnchors =  opts.pagerAnchors || [];
 	opts.pagerAnchors.push($a);
-	$a.bind(opts.pagerEvent, function(e) {
+	
+	var pagerFn = function(e) {
 		e.preventDefault();
 		opts.nextSlide = i;
 		var p = opts.$cont[0], timeout = p.cycleTimeout;
@@ -840,7 +841,14 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 			cb(opts.nextSlide, els[opts.nextSlide]);
 		go(els,opts,1,opts.currSlide < i); // trigger the trans
 //		return false; // <== allow bubble
-	});
+	}
+	
+	if ( /mouseenter|mouseover/i.test(opts.pagerEvent) ) {
+		$a.hover(pagerFn, function(){/* no-op */} );
+	}
+	else {
+		$a.bind(opts.pagerEvent, pagerFn);
+	}
 	
 	if ( ! /^click/.test(opts.pagerEvent) && !opts.allowPagerClickBubble)
 		$a.bind('click.cycle', function(){return false;}); // suppress click
