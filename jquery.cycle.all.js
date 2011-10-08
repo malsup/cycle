@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.9995 (09-AUG-2011)
+ * Version: 2.9996 (07-OCT-2011)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
  */
 ;(function($) {
 
-var ver = '2.9995';
+var ver = '2.9996';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -661,6 +661,10 @@ function go(els, opts, manual, fwd) {
 				if (p.cycleStop != opts.stopCount) return;
 				o.apply(next, [curr, next, opts, fwd]);
 			});
+			if (!p.cycleStop) {
+				// queue next transition
+				queueNext();
+			}
 		};
 
 		debug('tx firing('+fx+'); currSlide: ' + opts.currSlide + '; nextSlide: ' + opts.nextSlide);
@@ -714,14 +718,19 @@ function go(els, opts, manual, fwd) {
 	if (changed && opts.pager)
 		opts.updateActivePagerLink(opts.pager, opts.currSlide, opts.activePagerClass);
 	
-	// stage the next transition
-	var ms = 0;
-	if (opts.timeout && !opts.continuous)
-		ms = getTimeout(els[opts.currSlide], els[opts.nextSlide], opts, fwd);
-	else if (opts.continuous && p.cyclePause) // continuous shows work off an after callback, not this timer logic
-		ms = 10;
-	if (ms > 0)
-		p.cycleTimeout = setTimeout(function(){ go(els, opts, 0, !opts.backwards) }, ms);
+	function queueNext() {
+		// stage the next transition
+		var ms = 0, timeout = opts.timeout;
+		if (opts.timeout && !opts.continuous) {
+			ms = getTimeout(els[opts.currSlide], els[opts.nextSlide], opts, fwd);
+         if (opts.fx == 'shuffle')
+            ms -= opts.speedOut;
+      }
+		else if (opts.continuous && p.cyclePause) // continuous shows work off an after callback, not this timer logic
+			ms = 10;
+		if (ms > 0)
+			p.cycleTimeout = setTimeout(function(){ go(els, opts, 0, !opts.backwards) }, ms);
+	}
 };
 
 // invoked after transition
