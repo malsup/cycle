@@ -1,8 +1,8 @@
-/*
+/*!
  * jQuery Cycle Lite Plugin
  * http://malsup.com/jquery/cycle/lite/
  * Copyright (c) 2008-2011 M. Alsup
- * Version: 1.3 (01-JUN-2011)
+ * Version: 1.3.1 (07-OCT-2011)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -128,6 +128,7 @@ function go(els, opts, manual, fwd) {
             if ($.browser.msie)
                 this.style.removeAttribute('filter');
             $.each(opts.after, function(i,o) { o.apply(next, [curr, next, opts, fwd]); });
+            queueNext();
         };
 
         if (opts.nextSlide != opts.currSlide) {
@@ -138,8 +139,11 @@ function go(els, opts, manual, fwd) {
         opts.nextSlide = roll ? 0 : opts.nextSlide+1;
         opts.currSlide = roll ? els.length-1 : opts.nextSlide-1;
     }
-    if (opts.timeout)
-        p.cycleTimeout = setTimeout(function() { go(els,opts,0,!opts.rev) }, opts.timeout);
+    
+    function queueNext() {
+        if (opts.timeout)
+            p.cycleTimeout = setTimeout(function() { go(els,opts,0,!opts.rev) }, opts.timeout);
+    }
 };
 
 // advance slide forward or back
