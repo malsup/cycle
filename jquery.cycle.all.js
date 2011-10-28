@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.9997 (13-OCT-2011)
+ * Version: 2.9998 (27-OCT-2011)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
  */
-;(function($) {
+;(function($, undefined) {
 
-var ver = '2.9997';
+var ver = '2.9998';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -219,6 +219,7 @@ function destroy(opts) {
 
 // one-time initialization
 function buildOptions($cont, $slides, els, options, o) {
+	var startingSlideSpecified;
 	// support metadata plugin (v1.0 and v2.0)
 	var opts = $.extend({}, $.fn.cycle.defaults, options || {}, $.metadata ? $cont.metadata() : $.meta ? $cont.data() : {});
 	var meta = $.isFunction($cont.data) ? $cont.data(opts.metaAttr) : null;
@@ -255,10 +256,17 @@ function buildOptions($cont, $slides, els, options, o) {
 	if (opts.height && opts.height != 'auto')
 		$cont.height(opts.height);
 
-	if (opts.startingSlide)
+	if (opts.startingSlide != undefined) {
 		opts.startingSlide = parseInt(opts.startingSlide,10);
+		if (opts.startingSlide >= els.length || opts.startSlide < 0)
+			opts.startingSlide = 0; // catch bogus input
+		else 
+			startingSlideSpecified = true;
+	}
 	else if (opts.backwards)
 		opts.startingSlide = els.length - 1;
+	else
+		opts.startingSlide = 0;
 
 	// if random, mix up the slide array
 	if (opts.random) {
@@ -266,8 +274,18 @@ function buildOptions($cont, $slides, els, options, o) {
 		for (var i = 0; i < els.length; i++)
 			opts.randomMap.push(i);
 		opts.randomMap.sort(function(a,b) {return Math.random() - 0.5;});
-		opts.randomIndex = 1;
-		opts.startingSlide = opts.randomMap[1];
+		if (startingSlideSpecified) {
+			// try to find the specified starting slide and if found set start slide index in the map accordingly
+			for ( var cnt = 0; cnt < els.length; cnt++ ) {
+				if ( opts.startingSlide == opts.randomMap[cnt] ) {
+					opts.randomIndex = cnt;
+				}
+			}
+		}
+		else {
+			opts.randomIndex = 1;
+			opts.startingSlide = opts.randomMap[1];
+		}
 	}
 	else if (opts.startingSlide >= els.length)
 		opts.startingSlide = 0; // catch bogus input
@@ -541,6 +559,12 @@ function exposeAddSlide(opts, els) {
 			opts.els[prepend?'unshift':'push'](s); // shuffle needs this
 		opts.slideCount = els.length;
 
+		// add the slide to the random map and resort
+		if (opts.random) {
+			opts.randomMap.push(opts.slideCount-1);
+			opts.randomMap.sort(function(a,b) {return Math.random() - 0.5;});
+		}
+
 		$s.css('position','absolute');
 		$s[prepend?'prependTo':'appendTo'](opts.$cont);
 
@@ -687,8 +711,10 @@ function go(els, opts, manual, fwd) {
 		opts.lastSlide = opts.currSlide;
 		if (opts.random) {
 			opts.currSlide = opts.nextSlide;
-			if (++opts.randomIndex == els.length)
+			if (++opts.randomIndex == els.length) {
 				opts.randomIndex = 0;
+				opts.randomMap.sort(function(a,b) {return Math.random() - 0.5;});
+			}
 			opts.nextSlide = opts.randomMap[opts.randomIndex];
 			if (opts.nextSlide == opts.currSlide)
 				opts.nextSlide = (opts.currSlide == opts.slideCount - 1) ? 0 : opts.currSlide + 1;
