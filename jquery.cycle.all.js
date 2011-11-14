@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.9998 (27-OCT-2011)
+ * Version: 2.9999 (13-NOV-2011)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
  */
 ;(function($, undefined) {
 
-var ver = '2.9998';
+var ver = '2.9999';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -1051,7 +1051,7 @@ $.fn.cycle.defaults = {
 	speed:		   1000,  // speed of the transition (any valid fx speed value)
 	speedIn:	   null,  // speed of the 'in' transition
 	speedOut:	   null,  // speed of the 'out' transition
-	startingSlide: 0,	  // zero-based index of the first slide to be displayed
+	startingSlide: undefined,	  // zero-based index of the first slide to be displayed
 	sync:		   1,	  // true if in/out transitions should occur simultaneously
 	timeout:	   4000,  // milliseconds between slide transitions (0 to disable auto advance)
 	timeoutFn:     null,  // callback for determining per-slide timeout value:  function(currSlideElement, nextSlideElement, options, forwardFlag)
