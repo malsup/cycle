@@ -26,7 +26,7 @@ function log() {
 }
 $.expr[':'].paused = function(el) {
 	return el.cyclePause;
-}
+};
 
 
 // the options arg can be...
@@ -299,7 +299,7 @@ function buildOptions($cont, $slides, els, options, o) {
 			z = first ? i <= first ? els.length + (i-first) : first-i : els.length-i;
 		else
 			z = first ? i >= first ? els.length - (i-first) : first-i : els.length-i;
-		$(this).css('z-index', z)
+		$(this).css('z-index', z);
 	});
 
 	// make sure first slide is visible
@@ -879,7 +879,7 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 			cb(opts.nextSlide, els[opts.nextSlide]);
 		go(els,opts,1,opts.currSlide < i); // trigger the trans
 //		return false; // <== allow bubble
-	}
+	};
 	
 	if ( /mouseenter|mouseover/i.test(opts.pagerEvent) ) {
 		$a.hover(pagerFn, function(){/* no-op */} );
