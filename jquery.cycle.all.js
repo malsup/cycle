@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.9999 (13-NOV-2011)
+ * Version: 2.9999.1 (17-NOV-2011)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
  */
 ;(function($, undefined) {
 
-var ver = '2.9999';
+var ver = '2.9999.1';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -26,7 +26,7 @@ function log() {
 }
 $.expr[':'].paused = function(el) {
 	return el.cyclePause;
-}
+};
 
 
 // the options arg can be...
@@ -299,7 +299,7 @@ function buildOptions($cont, $slides, els, options, o) {
 			z = first ? i <= first ? els.length + (i-first) : first-i : els.length-i;
 		else
 			z = first ? i >= first ? els.length - (i-first) : first-i : els.length-i;
-		$(this).css('z-index', z)
+		$(this).css('z-index', z);
 	});
 
 	// make sure first slide is visible
@@ -879,7 +879,7 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 			cb(opts.nextSlide, els[opts.nextSlide]);
 		go(els,opts,1,opts.currSlide < i); // trigger the trans
 //		return false; // <== allow bubble
-	}
+	};
 	
 	if ( /mouseenter|mouseover/i.test(opts.pagerEvent) ) {
 		$a.hover(pagerFn, function(){/* no-op */} );
