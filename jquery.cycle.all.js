@@ -306,7 +306,7 @@ function buildOptions($cont, $slides, els, options, o) {
 	$(els[first]).css('opacity',1).show(); // opacity bit needed to handle restart use case
 	removeFilter(els[first], opts);
 
-	// stretch slides
+	// fit (and optionally stretch) slides into the container
 	if (opts.fit) {
 		if (!opts.aspect) {
 	        if (opts.width)
@@ -316,16 +316,32 @@ function buildOptions($cont, $slides, els, options, o) {
 		} else {
 			$slides.each(function(){
 				var $slide = $(this);
-				var ratio = (opts.aspect === true) ? $slide.width()/$slide.height() : opts.aspect;
-				if( opts.width && $slide.width() != opts.width ) {
-					$slide.width( opts.width );
-					$slide.height( opts.width / ratio );
-				}
+                var slide_width = $slide.width();
+                var slide_height = $slide.height();
+                var cont_width = $cont.width();
+                var cont_height = $cont.height();
+				var ratio = (opts.aspect === true) ? slide_width/slide_height : opts.aspect;
 
-				if( opts.height && $slide.height() < opts.height ) {
-					$slide.height( opts.height );
-					$slide.width( opts.height * ratio );
-				}
+                if (slide_width != cont_width) {
+                    if (slide_width > cont_width) {
+                         $slide.width(slide_width=cont_width);
+                    }
+                    else if (opts.scaling !== false) {
+                         $slide.width(slide_width=cont_width);
+                    }
+
+                     $slide.height(slide_height=slide_width/ratio);
+                }
+
+                if (slide_height != cont_height) {
+                    if (slide_height > cont_height) {
+                         $slide.height(slide_height=cont_height);
+                    }
+                    else if (opts.scaling !== false) {
+                         $slide.height(slide_height=cont_height);
+                    }
+                    $slide.width(slide_width=slide_height*ratio);    
+                }
 			});
 		}
 	}
