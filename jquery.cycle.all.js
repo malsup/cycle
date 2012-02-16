@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.9999.1 (17-NOV-2011)
+ * Version: 2.9999.2 (16-FEB-2012)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
  */
 ;(function($, undefined) {
 
-var ver = '2.9999.1';
+var ver = '2.9999.2';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -124,7 +124,7 @@ function handleArguments(cont, options, arg2) {
 			opts.elements && $(opts.elements).stop();
 			$(cont).removeData('cycle.opts');
 			if (options == 'destroy')
-				destroy(opts);
+				destroy(cont, opts);
 			return false;
 		case 'toggle':
 			cont.cyclePause = (cont.cyclePause === 1) ? 0 : 1;
@@ -202,7 +202,7 @@ function removeFilter(el, opts) {
 };
 
 // unbind event handlers
-function destroy(opts) {
+function destroy(cont, opts) {
 	if (opts.next)
 		$(opts.next).unbind(opts.prevNextEvent);
 	if (opts.prev)
@@ -213,6 +213,7 @@ function destroy(opts) {
 			this.unbind().remove();
 		});
 	opts.pagerAnchors = null;
+	$(cont).unbind('mouseenter.cycle mouseleave.cycle');
 	if (opts.destroy) // callback
 		opts.destroy(opts);
 };
@@ -371,17 +372,14 @@ function buildOptions($cont, $slides, els, options, o) {
 
 	var pauseFlag = false;  // https://github.com/malsup/cycle/issues/44
 	if (opts.pause)
-		$cont.hover(
-			function(){
-				pauseFlag = true;
-				this.cyclePause++;
-				triggerPause(cont, true);
-			},
-			function(){
+		$cont.bind('mouseenter.cycle', function(){
+			pauseFlag = true;
+			this.cyclePause++;
+			triggerPause(cont, true);
+		}).bind('mouseleave.cycle', function(){
 				pauseFlag && this.cyclePause--;
 				triggerPause(cont, true);
-			}
-		);
+		});
 
 	if (supportMultiTransitions(opts) === false)
 		return false;
