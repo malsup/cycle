@@ -1,8 +1,8 @@
 /*!
  * jQuery Cycle Lite Plugin
  * http://malsup.com/jquery/cycle/lite/
- * Copyright (c) 2008-2011 M. Alsup
- * Version: 1.3.1 (07-OCT-2011)
+ * Copyright (c) 2008-2012 M. Alsup
+ * Version: 1.4 (01-MAR-2012)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = 'Lite-1.3';
+var ver = 'Lite-1.4';
 
 $.fn.cycle = function(options) {
     return this.each(function() {
@@ -30,9 +30,9 @@ $.fn.cycle = function(options) {
 
         // support metadata plugin (v1.0 and v2.0)
         var opts = $.extend({}, $.fn.cycle.defaults, options || {}, $.metadata ? $cont.metadata() : $.meta ? $cont.data() : {});
-		var meta = $.isFunction($cont.data) ? $cont.data(opts.metaAttr) : null;
-		if (meta)
-			opts = $.extend(opts, meta);
+        var meta = $.isFunction($cont.data) ? $cont.data(opts.metaAttr) : null;
+        if (meta)
+            opts = $.extend(opts, meta);
             
         opts.before = opts.before ? [opts.before] : [];
         opts.after = opts.after ? [opts.after] : [];
@@ -67,7 +67,7 @@ $.fn.cycle = function(options) {
             $cont.hover(function(){this.cyclePause=1;}, function(){this.cyclePause=0;});
 
         var txFn = $.fn.cycle.transitions[opts.fx];
-		txFn && txFn($cont, $slides, opts);
+        txFn && txFn($cont, $slides, opts);
         
         $slides.each(function() {
             var $el = $(this);
@@ -90,7 +90,7 @@ $.fn.cycle = function(options) {
         opts.speedIn = opts.speed;
         opts.speedOut = opts.speed;
 
- 		opts.slideCount = els.length;
+         opts.slideCount = els.length;
         opts.currSlide = first;
         opts.nextSlide = 1;
 
@@ -104,9 +104,9 @@ $.fn.cycle = function(options) {
         if (opts.click && !opts.next)
             opts.next = opts.click;
         if (opts.next)
-            $(opts.next).bind('click', function(){return advance(els,opts,opts.rev?-1:1)});
+            $(opts.next).unbind('click.cycle').bind('click.cycle', function(){return advance(els,opts,opts.rev?-1:1)});
         if (opts.prev)
-            $(opts.prev).bind('click', function(){return advance(els,opts,opts.rev?1:-1)});
+            $(opts.prev).unbind('click.cycle').bind('click.cycle', function(){return advance(els,opts,opts.rev?1:-1)});
 
         if (opts.timeout)
             this.cycleTimeout = setTimeout(function() {
@@ -177,21 +177,21 @@ $.fn.cycle.custom = function(curr, next, opts, cb) {
 
 $.fn.cycle.transitions = {
     fade: function($cont, $slides, opts) {
-		$slides.not(':eq(0)').hide();
-		opts.cssBefore = { opacity: 0, display: 'block' };
-		opts.cssAfter  = { display: 'none' };
-		opts.animOut = { opacity: 0 };
-		opts.animIn = { opacity: 1 };
+        $slides.not(':eq(0)').hide();
+        opts.cssBefore = { opacity: 0, display: 'block' };
+        opts.cssAfter  = { display: 'none' };
+        opts.animOut = { opacity: 0 };
+        opts.animIn = { opacity: 1 };
     },
     fadeout: function($cont, $slides, opts) {
-		opts.before.push(function(curr,next,opts,fwd) {
-			$(curr).css('zIndex',opts.slideCount + (fwd === true ? 1 : 0));
-			$(next).css('zIndex',opts.slideCount + (fwd === true ? 0 : 1));
-		});
-		$slides.not(':eq(0)').hide();
-		opts.cssBefore = { opacity: 1, display: 'block', zIndex: 1 };
-		opts.cssAfter  = { display: 'none', zIndex: 0 };
-		opts.animOut = { opacity: 0 };
+        opts.before.push(function(curr,next,opts,fwd) {
+            $(curr).css('zIndex',opts.slideCount + (fwd === true ? 1 : 0));
+            $(next).css('zIndex',opts.slideCount + (fwd === true ? 0 : 1));
+        });
+        $slides.not(':eq(0)').hide();
+        opts.cssBefore = { opacity: 1, display: 'block', zIndex: 1 };
+        opts.cssAfter  = { display: 'none', zIndex: 0 };
+        opts.animOut = { opacity: 0 };
     }
 };
 
@@ -199,17 +199,17 @@ $.fn.cycle.ver = function() { return ver; };
 
 // @see: http://malsup.com/jquery/cycle/lite/
 $.fn.cycle.defaults = {
-	animIn:        {},
-	animOut:       {},
-	fx:           'fade',
+    animIn:        {},
+    animOut:       {},
+    fx:           'fade',
     after:         null, 
     before:        null, 
-	cssBefore:     {},
-	cssAfter:      {},
+    cssBefore:     {},
+    cssAfter:      {},
     delay:         0,    
     fit:           0,    
     height:       'auto',
-	metaAttr:     'cycle',
+    metaAttr:     'cycle',
     next:          null, 
     pause:         0,    
     prev:          null, 
