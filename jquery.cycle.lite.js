@@ -17,6 +17,7 @@ $.fn.cycle = function(options) {
         options = options || {};
         
         if (this.cycleTimeout) clearTimeout(this.cycleTimeout);
+
         this.cycleTimeout = 0;
         this.cyclePause = 0;
         
@@ -52,7 +53,7 @@ $.fn.cycle = function(options) {
             $cont.height(opts.height);
 
         var first = 0;
-        $slides.css({position: 'absolute', top:0, left:0}).each(function(i) { 
+        $slides.css({position: 'absolute', top:0}).each(function(i) {
             $(this).css('z-index', els.length-i) 
         });
         
@@ -138,7 +139,11 @@ function go(els, opts, manual, fwd) {
         var roll = (opts.nextSlide + 1) == els.length;
         opts.nextSlide = roll ? 0 : opts.nextSlide+1;
         opts.currSlide = roll ? els.length-1 : opts.nextSlide-1;
+    } else {
+      queueNext();
     }
+
+
     
     function queueNext() {
         if (opts.timeout)
