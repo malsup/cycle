@@ -2,7 +2,7 @@
  * jQuery Cycle Lite Plugin
  * http://malsup.com/jquery/cycle/lite/
  * Copyright (c) 2008-2012 M. Alsup
- * Version: 1.4 (01-MAR-2012)
+ * Version: 1.5 (05-MAR-2012)
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -10,7 +10,7 @@
  */
 ;(function($) {
 
-var ver = 'Lite-1.4';
+var ver = 'Lite-1.5';
 
 $.fn.cycle = function(options) {
     return this.each(function() {
@@ -143,8 +143,6 @@ function go(els, opts, manual, fwd) {
       queueNext();
     }
 
-
-    
     function queueNext() {
         if (opts.timeout)
             p.cycleTimeout = setTimeout(function() { go(els,opts,0,!opts.rev) }, opts.timeout);
