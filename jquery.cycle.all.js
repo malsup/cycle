@@ -2,14 +2,14 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.9999.2 (16-FEB-2012)
+ * Version: 2.9999.3 (08-MAR-2012)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
  */
 ;(function($, undefined) {
 
-var ver = '2.9999.2';
+var ver = '2.9999.3';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support == undefined) {
@@ -613,20 +613,23 @@ $.fn.cycle.resetState = function(opts, fx) {
 
 // this is the main engine fn, it handles the timeouts, callbacks and slide index mgmt
 function go(els, opts, manual, fwd) {
+	var p = opts.$cont[0], curr = els[opts.currSlide], next = els[opts.nextSlide];
+
 	// opts.busy is true if we're in the middle of an animation
 	if (manual && opts.busy && opts.manualTrump) {
 		// let manual transitions requests trump active ones
 		debug('manualTrump in go(), stopping active transition');
 		$(els).stop(true,true);
 		opts.busy = 0;
+		clearTimeout(p.cycleTimeout);
 	}
+
 	// don't begin another timeout-based transition if there is one active
 	if (opts.busy) {
 		debug('transition active, ignoring new tx request');
 		return;
 	}
 
-	var p = opts.$cont[0], curr = els[opts.currSlide], next = els[opts.nextSlide];
 
 	// stop cycling if we have an outstanding stop request
 	if (p.cycleStop != opts.stopCount || p.cycleTimeout === 0 && !manual)
