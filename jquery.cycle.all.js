@@ -10,7 +10,7 @@
  * Touch Support integration features ( "TOUCHMOD" )
  * TOUCHMOD Requires: jQuery v1.4.3 or later
  * Modified By: Keegan Brown -- TOUCHMOD Version: 0.9 (APR-2012)
- * 
+ *
  */
 ;(function($, undefined) {
 "use strict";
@@ -246,7 +246,7 @@ function detectTouchSupport(bypass) {
 }
 $.fn.cycle.haveCheckedCSS3Support = false;
 $.fn.cycle.addCSS3Support = function () {
-	haveCheckedCSS3Support = true;
+	$.fn.cycle.haveCheckedCSS3Support = true;
 	var addSupportFor = [ 'userSelect', 'userModify', 'userDrag', 'tapHighlightColor' ];
 	var extraSupport = [ 'transitionDuration', 'transitionDelay', 'transform', 'transformOrigin', 'transformStyle',
 					  'transitionProperty', 'perspective', 'backfaceVisibility' ];
@@ -357,7 +357,9 @@ function integrateTouch (opts, cont) {
 
 
 		//TOUCHMOD -- ADD CSS RULES TO HELP ENGAGE iOS Hardware Acceleration
-		//$cont.css( { transform: 'translate3d(0,0,0)' } );
+		if ( !!window.navigator.userAgent.match(/ipad|ipod|iphone/) ) {
+			$cont.css( { transform: 'translate3d(0,0,0)' } );
+		}
 		$(opts.elements).add( opts.pager + " *" ).css( { perspective: 0, backfaceVisibility: 'hidden', userSelect: 'none', userModify: 'read-only', userDrag: 'none', tapHighlightColor: 'transparent', transitionDuration: 0, transformStyle: 'flat' } );
 
 		//TOUCHMOD -- TOUCH BEHAVIOR INITIALIZATION
@@ -369,7 +371,7 @@ function integrateTouch (opts, cont) {
 			dir = $.fn.cycle.transitions[opts.touchFx].activeDir || { x: 1, y: 0 };
 			if ( !!dir.x ) {
 				changeCycle = (mainContSize.width/4);
-			} else {
+			} else if ( !!dir.y )  {
 				changeCycle = (mainContSize.height/4);
 			}
 
@@ -384,16 +386,19 @@ function integrateTouch (opts, cont) {
 				dragSlideTick = $.fn.cycle.transitions[opts.touchFx].dragSlideTick;
 			}
 		} else {
-			touchFx = 'touchScrollHorz';
-			dir.x = 1;
-			changeCycle = (mainContSize.width/4);
+			//touchFx = 'touchScrollHorz';
+			//dir.x = 1;
+			//changeCycle = (mainContSize.width/4);
+			return false;
 		}
 		changeCycle = ( !!opts.touchCycleLimit ) ? opts.touchCycleLimit : changeCycle;
 
 		// TOUCHMOD -- DEFAULT TOUCH BEHAVIOR INITIALIZATION
+		/*
 		if ( !!!initSlidePos && !!!snapSlideBack && !!!dragSlideTick ) {
 
 		}
+		*/
 
 		//TOUCHMOD -- TOUCH CORE FUNCTIONALITY -- GETTING POSITION OF TOUCH EVENTS, PREPARING ELEMENTS FOR DRAGGING
 		var dragStart = function (event) {
