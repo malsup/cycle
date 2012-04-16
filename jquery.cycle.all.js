@@ -1844,9 +1844,6 @@ $.fn.cycle.transitions.touchScrollHorz = function($cont, $slides, opts) {
 		$.fn.cycle.commonReset(curr,next,opts);
 		opts.animOut.left = fwd ? curr.cycleW * dirrev : -curr.cycleW * dirrev;
 	});
-	opts.after.push(function(curr, next, opts, fwd) {
-		$cont
-	});
 	opts.cssBefore.top = 0;
 	opts.animIn.left = 0;
 	opts.animOut.top = 0;

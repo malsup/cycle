@@ -162,7 +162,7 @@ body {
 }
 
 .cycleItem {
-    height: 100%;
+    min-height: 100%;
     width: 100%;
     display: block;
 }
@@ -173,11 +173,11 @@ body {
 .item4 { background-color: #FFFF99; }
 .item5 { background-color: #9999FF; }
 
-.item1 .itemWrap { height: 100%; }
-.item2 .itemWrap { height: 200%; }
-.item3 .itemWrap { height: 300%; }
-.item4 .itemWrap { height: 180%; }
-.item5 .itemWrap { height: 130%; }
+.item1 .itemWrap { height: 300px; }
+.item2 .itemWrap { height: 600px; }
+.item3 .itemWrap { height: 900px; }
+.item4 .itemWrap { height: 400px; }
+.item5 .itemWrap { height: 500px; }
 
 .cycleItem .itemWrap { padding: 20px; }
 

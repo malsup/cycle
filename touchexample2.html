@@ -1,0 +1,138 @@
+<!doctype html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+	<title>jQuery-Cycle Touch Integration Example</title>
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<meta name="viewport" content="width=400">
+
+	<link rel="stylesheet" href="touchexample/css/style.css">
+
+	<script src="touchexample/js/libs/jquery.min.js"></script>
+</head>
+<body>
+
+<div id="container">
+	<div id="header">
+		<h1>jQuery-Cycle Touch Integration Example</h1>
+	</div>
+	<div id="main" role="main">
+		<div class="pager clearfix"></div>
+		<ul id="cycle">
+			<li class="cycleItem item1">
+				<div class="itemWrap">
+					<h2>This is Cycle Item 1</h2>
+					<p>This is some content, with a <a href="https://github.com/malsup/cycle" target="_blank">link</a></p>
+				</div>
+			</li>
+			<li class="cycleItem item2">
+				<div class="itemWrap">
+					<h2>This is Cycle Item 2</h2>
+				</div>
+			</li>
+			<li class="cycleItem item3">
+				<div class="itemWrap">
+					<h2>This is Cycle Item 3</h2>
+				</div>
+			</li>
+			<li class="cycleItem item4">
+				<div class="itemWrap">
+					<h2>This is Cycle Item 4</h2>
+				</div>
+			</li>
+			<li class="cycleItem item5">
+				<div class="itemWrap">
+					<h2>This is Cycle Item 5</h2>
+				</div>
+			</li>
+		</ul>
+	</div>
+	<div id="footer">
+		<p>This is a fork of cycle. </p>
+	</div>
+</div>
+
+
+<!-- SCRIPTS -- DONT DISPLAY ELEMENTS BENEATH THESE -->
+<script src="jquery.cycle.all.js"></script>
+
+<script type="text/javascript">
+$(function () {
+	$.fn.cycle.transitions.customTouch = function($cont, $slides, opts) {
+		$cont.css('overflow','hidden').width();
+		opts.before.push(function(curr, next, opts, fwd) {
+			$(curr).css('height','auto');
+			var newheight = opts.height = $(curr).children('div').height();
+			$cont.height(newheight);
+
+			var dirrev = -1;
+			if (opts.rev) {
+				fwd = !fwd;
+				dirrev = 1;
+			}
+			$.fn.cycle.commonReset(curr,next,opts);
+			opts.cssBefore.left = fwd ? (next.cycleW-1) : (1-next.cycleW);
+			opts.animOut.left = fwd ? curr.cycleW * dirrev : -curr.cycleW * dirrev;
+		});
+		opts.after.push(function(curr, next, opts, fwd) {
+			$(this).css('height','auto');
+			var newheight = opts.height = $(this).children('div').height();
+			$cont.height(newheight);
+		});
+		console.log( opts );
+		opts.cssFirst.left = $slides.eq(opts.currSlide).position().left;
+		opts.cssBefore.top = $slides.eq(opts.currSlide).position().top;
+		opts.animIn.left = 0;
+		opts.animOut.top = 0;
+	}
+	$.fn.cycle.transitions.customTouch.activeDir = { x: 1, y: 0 }
+	$.fn.cycle.transitions.customTouch.initSlidePos = function ( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart ) {
+		var move = { x: (mainContSize.width * dir.x * revdir), y: (mainContSize.height * dir.y * revdir) }
+		prevElem.css( { left: -move.x + currStart.x, top: -move.y + currStart.y, display: 'block', opacity: 1 } );
+		nextElem.css( {	left: move.x + currStart.x, top: move.y + currStart.y, display: 'block', opacity: 1 } );
+	}
+	$.fn.cycle.transitions.customTouch.snapSlideBack = function ( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart ) {
+		var move = { x: (mainContSize.width * dir.x * revdir), y: (mainContSize.height * dir.y * revdir) }
+		prevElem.stop(true,false).animate( { left: -move.x, top: -move.y }, opts.speed/4 );
+		currElem.stop(true,false).animate( { left: 0, top: 0 }, opts.speed/4 );
+		nextElem.stop(true,false).animate( { left: move.x, top: move.y }, opts.speed/4 );
+	}
+	$.fn.cycle.transitions.customTouch.dragSlideTick = function ( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart ) {
+		prevElem.stop(true,false).css( {
+			left: ( ( -mainContSize.width + diffPos.pageX ) * dir.x ) + currStart.x,
+			top: ( ( -mainContSize.height + diffPos.pageY ) * dir.y ) + currStart.y,
+			display: 'block', opacity: 1
+		} );
+		currElem.stop(true,false).css( {
+			left: ( ( 0 + diffPos.pageX ) * dir.x ) + currStart.x,
+			top: ( ( 0 + diffPos.pageY ) * dir.y ) + currStart.y,
+			display: 'block', opacity: 1
+		} );
+		nextElem.stop(true,false).css( {
+			left: ( ( mainContSize.width + diffPos.pageX ) * dir.x ) + currStart.x,
+			top: ( ( mainContSize.height + diffPos.pageY ) * dir.y ) + currStart.y,
+			display: 'block', opacity: 1
+		} );
+	}
+
+	$('#cycle').cycle({
+		fx: 'customTouch',
+		speed: 500,
+		touchFx: 'customTouch',
+		touchClickDrag: true,
+		timeout: 0,
+		pager: '.pager',
+		touchMinDrag: 5,
+		rev: 0
+	}).css({
+		cursor: 'move'
+	});
+});
+</script>
+<!-- end scripts-->
+
+</body>
+</html>
