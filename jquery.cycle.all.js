@@ -357,9 +357,11 @@ function integrateTouch (opts, cont) {
 
 
 		//TOUCHMOD -- ADD CSS RULES TO HELP ENGAGE iOS Hardware Acceleration
+		/*
 		if ( !!window.navigator.userAgent.match(/ipad|ipod|iphone/) ) {
 			$cont.parent().css( { transform: 'translate3d(0,0,0)' } );
 		}
+		*/
 		$(opts.elements).add( opts.pager + " *" ).css( { perspective: 0, backfaceVisibility: 'hidden', userSelect: 'none', userModify: 'read-only', userDrag: 'none', tapHighlightColor: 'transparent', transitionDuration: 0, transformStyle: 'flat' } );
 
 		//TOUCHMOD -- TOUCH BEHAVIOR INITIALIZATION
@@ -1852,6 +1854,11 @@ $.fn.cycle.transitions.touchScrollHorz = function($cont, $slides, opts) {
 	opts.cssBefore.top = 0;
 	opts.animIn.left = 0;
 	opts.animOut.top = 0;
+
+	//CSS RULES TO HELP ENGAGE iOS Hardware Acceleration
+	if ( !!window.navigator.userAgent.match(/ipad|ipod|iphone/) ) {
+		$cont.parent().css( { transform: 'translate3d(0,0,0)' } );
+	}
 }
 $.fn.cycle.transitions.touchScrollHorz.activeDir = { x: 1, y: 0 }
 $.fn.cycle.transitions.touchScrollHorz.initSlidePos = function ( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart ) {
@@ -1899,6 +1906,11 @@ $.fn.cycle.transitions.touchScrollVert = function($cont, $slides, opts) {
 	opts.cssBefore.left = 0;
 	opts.animIn.top = 0;
 	opts.animOut.left = 0;
+
+	//CSS RULES TO HELP ENGAGE iOS Hardware Acceleration
+	if ( !!window.navigator.userAgent.match(/ipad|ipod|iphone/) ) {
+		$cont.parent().css( { transform: 'translate3d(0,0,0)' } );
+	}
 }
 $.fn.cycle.transitions.touchScrollVert.activeDir = { x: 0, y: 1 }
 $.fn.cycle.transitions.touchScrollVert.initSlidePos = function ( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart ) {

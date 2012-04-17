@@ -7,7 +7,7 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 
-	<meta name="viewport" content="width=400">
+	<meta name="viewport" content="width=550">
 
 	<link rel="stylesheet" href="touchexample/css/style.css">
 
@@ -63,6 +63,10 @@
 $(function () {
 	$.fn.cycle.transitions.customTouch = function($cont, $slides, opts) {
 		$cont.css('overflow','hidden').width();
+		if ( !!window.navigator.userAgent.match(/ipad|ipod|iphone/) ) {
+			$('body').css( { transform: 'translate3d(0,0,0)' } );
+		}
+		$slides.css('display','block')
 		opts.before.push(function(curr, next, opts, fwd) {
 			var cssBeforeLeft;
 
@@ -92,10 +96,9 @@ $(function () {
 			var newheight = opts.height = $(this).children('div').height();
 			$cont.height(newheight);
 		});
-		opts.cssFirst.height = opts.height = $slides.eq(opts.currSlide).height();
-		$cont.height(opts.height);
+		//opts.cssFirst.height = opts.height = $slides.eq(opts.currSlide).height();
+		//$cont.height(opts.height);
 
-		console.log( $cont.height() );
 		//opts.cssFirst.left = $slides.eq(opts.currSlide).position().left;
 		//opts.cssBefore.top = $slides.eq(opts.currSlide).position().top;
 		opts.animIn.left = 0;
@@ -139,10 +142,11 @@ $(function () {
 		touchFx: 'customTouch',
 		slideResize: 0,
 		containerResize: 0,
-		touchClickDrag: true,
+		touchClickDrag: false,
+		touchCycleLimit: 30,
 		timeout: 0,
 		pager: '.pager',
-		touchMinDrag: 5,
+		touchMinDrag: 20,
 		rev: 0
 	}).css({
 		cursor: 'move'
