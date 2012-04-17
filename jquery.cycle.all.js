@@ -1355,6 +1355,11 @@ $.fn.cycle.defaults = {
     sync:             1,        // true if in/out transitions should occur simultaneously
     timeout:          4000,     // milliseconds between slide transitions (0 to disable auto advance)
     timeoutFn:        null,     // callback for determining per-slide timeout value:  function(currSlideElement, nextSlideElement, options, forwardFlag)
+	touchFx:	   null,  // name of touch transition effect. Touch Functionality will not be enabled if left "null" or "false"
+	touchCycleLimit:  0,  // Number (in px) for touch gesture before a touchend event will force a cycle.
+	touchClickDrag:   0,  // true to enable mouse slide-dragging.
+	touchMinDrag: 	  0,  // Minimum (in px) before touch handling will effect positioning of the cycle
+	touchPagerEvent: 'touchstart.cycle', //Touch Event to use for pagers.
     updateActivePagerLink: null,// callback fn invoked to update the active pager link (adds/removes activePagerClass style)
     width:            null      // container width (if the 'fit' option is true, the slides will be set to this width as well)
 };
