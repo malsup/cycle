@@ -64,8 +64,16 @@ $(function () {
 	$.fn.cycle.transitions.customTouch = function($cont, $slides, opts) {
 		$cont.css('overflow','hidden').width();
 		opts.before.push(function(curr, next, opts, fwd) {
-			$(curr).css('height','auto');
-			var newheight = opts.height = $(curr).children('div').height();
+			var cssBeforeLeft;
+
+			if ( $(next).css('display') !== 'none' ) {
+				cssBeforeLeft = $(next).position().left;
+			} else {
+				cssBeforeLeft = fwd ? (next.cycleW-1) : (1-next.cycleW);
+			}
+
+			$(next).css('height','auto');
+			var newheight = opts.height = $(next).children('div').height();
 			$cont.height(newheight);
 
 			var dirrev = -1;
@@ -74,7 +82,9 @@ $(function () {
 				dirrev = 1;
 			}
 			$.fn.cycle.commonReset(curr,next,opts);
-			opts.cssBefore.left = fwd ? (next.cycleW-1) : (1-next.cycleW);
+
+			//opts.cssBefore.left = fwd ? (next.cycleW-1) : (1-next.cycleW);
+			opts.cssBefore.left = cssBeforeLeft;
 			opts.animOut.left = fwd ? curr.cycleW * dirrev : -curr.cycleW * dirrev;
 		});
 		opts.after.push(function(curr, next, opts, fwd) {
@@ -82,10 +92,15 @@ $(function () {
 			var newheight = opts.height = $(this).children('div').height();
 			$cont.height(newheight);
 		});
-		console.log( opts );
-		opts.cssFirst.left = $slides.eq(opts.currSlide).position().left;
-		opts.cssBefore.top = $slides.eq(opts.currSlide).position().top;
+		opts.cssFirst.height = opts.height = $slides.eq(opts.currSlide).height();
+		$cont.height(opts.height);
+
+		console.log( $cont.height() );
+		//opts.cssFirst.left = $slides.eq(opts.currSlide).position().left;
+		//opts.cssBefore.top = $slides.eq(opts.currSlide).position().top;
 		opts.animIn.left = 0;
+		opts.animIn.top = 0;
+		opts.animOut.left = 0;
 		opts.animOut.top = 0;
 	}
 	$.fn.cycle.transitions.customTouch.activeDir = { x: 1, y: 0 }
@@ -122,6 +137,8 @@ $(function () {
 		fx: 'customTouch',
 		speed: 500,
 		touchFx: 'customTouch',
+		slideResize: 0,
+		containerResize: 0,
 		touchClickDrag: true,
 		timeout: 0,
 		pager: '.pager',

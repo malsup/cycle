@@ -358,7 +358,7 @@ function integrateTouch (opts, cont) {
 
 		//TOUCHMOD -- ADD CSS RULES TO HELP ENGAGE iOS Hardware Acceleration
 		if ( !!window.navigator.userAgent.match(/ipad|ipod|iphone/) ) {
-			$cont.css( { transform: 'translate3d(0,0,0)' } );
+			$cont.parent().css( { transform: 'translate3d(0,0,0)' } );
 		}
 		$(opts.elements).add( opts.pager + " *" ).css( { perspective: 0, backfaceVisibility: 'hidden', userSelect: 'none', userModify: 'read-only', userDrag: 'none', tapHighlightColor: 'transparent', transitionDuration: 0, transformStyle: 'flat' } );
 
