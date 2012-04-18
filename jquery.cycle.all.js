@@ -357,12 +357,7 @@ function integrateTouch (opts, cont) {
 
 
 		//TOUCHMOD -- ADD CSS RULES TO HELP ENGAGE iOS Hardware Acceleration
-		/*
-		if ( !!window.navigator.userAgent.match(/ipad|ipod|iphone/) ) {
-			$cont.parent().css( { transform: 'translate3d(0,0,0)' } );
-		}
-		*/
-		$(opts.elements).add( opts.pager + " *" ).css( { perspective: 0, backfaceVisibility: 'hidden', userSelect: 'none', userModify: 'read-only', userDrag: 'none', tapHighlightColor: 'transparent', transitionDuration: 0, transformStyle: 'flat' } );
+		$(opts.elements).css( { backfaceVisibility: 'hidden',  userSelect: 'none', userModify: 'read-only', userDrag: 'none', tapHighlightColor: 'transparent' } );
 
 		//TOUCHMOD -- TOUCH BEHAVIOR INITIALIZATION
 		var initSlidePos, snapSlideBack, dragSlideTick;
@@ -395,13 +390,6 @@ function integrateTouch (opts, cont) {
 		}
 		changeCycle = ( !!opts.touchCycleLimit ) ? opts.touchCycleLimit : changeCycle;
 
-		// TOUCHMOD -- DEFAULT TOUCH BEHAVIOR INITIALIZATION
-		/*
-		if ( !!!initSlidePos && !!!snapSlideBack && !!!dragSlideTick ) {
-
-		}
-		*/
-
 		//TOUCHMOD -- TOUCH CORE FUNCTIONALITY -- GETTING POSITION OF TOUCH EVENTS, PREPARING ELEMENTS FOR DRAGGING
 		var dragStart = function (event) {
 			if ( !!!opts.busy ) {
@@ -428,8 +416,12 @@ function integrateTouch (opts, cont) {
 			}
 		}
 		var dragMove = function (event) {
+			var currPos = getTouchPos(event);
+			if ( dragstate !== 'dragging' && !!opts.touchMinDrag &&
+				( Math.abs( diffPos.pageX ) * dir.y > opts.touchMinDrag || Math.abs( diffPos.pageY ) * dir.x > opts.touchMinDrag ) ) {
+				dragstate = 'locked';
+			}
 			if ( !!!opts.busy && dragging && dragstate !== 'locked' ) {
-				var currPos = getTouchPos(event);
 				diffPos.pageX = currPos.pageX - initPos.pageX;
 				diffPos.pageY = currPos.pageY - initPos.pageY;
 
@@ -439,11 +431,6 @@ function integrateTouch (opts, cont) {
 					event.preventDefault();
 				} else {
 					snapSlideBack( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart );
-				}
-
-				if ( dragstate !== 'dragging' && !!opts.touchMinDrag &&
-					( Math.abs( diffPos.pageX ) * dir.y > opts.touchMinDrag || Math.abs( diffPos.pageY ) * dir.x > opts.touchMinDrag ) ) {
-					dragstate = 'locked';
 				}
 			}
 		}
@@ -474,10 +461,13 @@ function integrateTouch (opts, cont) {
 				dragging = false;
 				dragstate = null;
 				event.preventDefault();
+			} else {
+				dragCancel();
 			}
 		}
 		var dragCancel = function () {
 			dragging = false;
+			dragstate = null;
 			snapSlideBack( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart );
 		}
 
@@ -667,7 +657,7 @@ function buildOptions($cont, $slides, els, options, o) {
 	}
 
 	var pauseFlag = false;  // https://github.com/malsup/cycle/issues/44
-	if (opts.pause)
+	if (opts.pause) {
 		$cont.bind('mouseenter.cycle', function(){
 			pauseFlag = true;
 			this.cyclePause++;
@@ -677,6 +667,8 @@ function buildOptions($cont, $slides, els, options, o) {
 					this.cyclePause--;
 				triggerPause(cont, true);
 		});
+	}
+
 
 	if (supportMultiTransitions(opts) === false)
 		return false;
@@ -1186,7 +1178,14 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 		$a.hover(pagerFn, function(){/* no-op */} );
 	}
 	else {
-		$a.bind(opts.pagerEvent, pagerFn);
+		// TOUCHMOD -- INTEGRATE TOUCH FUNCTIONALITY INTO PAGERS
+		if ( !supportsTouch ) {
+			$a.bind(opts.pagerEvent, pagerFn);
+		} else {
+			$a.bind(opts.touchPagerEvent, pagerFn);
+			$a.bind(opts.pagerEvent, function (e) { e.preventDefault(); });
+			//$a.bind(opts.pagerEvent, pagerFn);
+		}
 	}
 
 	if ( ! /^click/.test(opts.pagerEvent) && !opts.allowPagerClickBubble)

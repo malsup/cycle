@@ -7,7 +7,7 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 
-	<meta name="viewport" content="width=550">
+	<meta name="viewport" content="width=500">
 
 	<link rel="stylesheet" href="touchexample/css/style.css">
 
@@ -62,11 +62,17 @@
 <script type="text/javascript">
 $(function () {
 	$.fn.cycle.transitions.customTouch = function($cont, $slides, opts) {
-		$cont.css('overflow','hidden').width();
+		$cont.css('overflow','hidden');  //.width();
 		if ( !!window.navigator.userAgent.match(/ipad|ipod|iphone/) ) {
-			$('body').css( { transform: 'translate3d(0,0,0)' } );
+			//var $target = $cont.children();
+			//while( $target.length ) { $target = $target.children(); }
+			//$target.end().css( { transform: 'translate3d(0,0,0)', transformStyle: 'flat' } );
+			$('body').css( { transform: 'translate3d(0,0,0)', transformStyle: 'flat' } );
+			$('body').children().css( { transformStyle: 'flat' } );
+
+			$slides.css( { display: 'block', opacity: 1 } );
+			//$cont.parent().css( { transform: 'translate3d(0,0,0)', backfaceVisibility: 'hidden' } );
 		}
-		$slides.css('display','block')
 		opts.before.push(function(curr, next, opts, fwd) {
 			var cssBeforeLeft;
 
@@ -107,18 +113,18 @@ $(function () {
 		opts.animOut.top = 0;
 	}
 	$.fn.cycle.transitions.customTouch.activeDir = { x: 1, y: 0 }
-	$.fn.cycle.transitions.customTouch.initSlidePos = function ( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart ) {
+	$.fn.cycle.transitions.customTouch.initSlidePos = function( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart ) {
 		var move = { x: (mainContSize.width * dir.x * revdir), y: (mainContSize.height * dir.y * revdir) }
 		prevElem.css( { left: -move.x + currStart.x, top: -move.y + currStart.y, display: 'block', opacity: 1 } );
 		nextElem.css( {	left: move.x + currStart.x, top: move.y + currStart.y, display: 'block', opacity: 1 } );
 	}
-	$.fn.cycle.transitions.customTouch.snapSlideBack = function ( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart ) {
+	$.fn.cycle.transitions.customTouch.snapSlideBack = function( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart ) {
 		var move = { x: (mainContSize.width * dir.x * revdir), y: (mainContSize.height * dir.y * revdir) }
 		prevElem.stop(true,false).animate( { left: -move.x, top: -move.y }, opts.speed/4 );
 		currElem.stop(true,false).animate( { left: 0, top: 0 }, opts.speed/4 );
 		nextElem.stop(true,false).animate( { left: move.x, top: move.y }, opts.speed/4 );
 	}
-	$.fn.cycle.transitions.customTouch.dragSlideTick = function ( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart ) {
+	$.fn.cycle.transitions.customTouch.dragSlideTick = function( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart ) {
 		prevElem.stop(true,false).css( {
 			left: ( ( -mainContSize.width + diffPos.pageX ) * dir.x ) + currStart.x,
 			top: ( ( -mainContSize.height + diffPos.pageY ) * dir.y ) + currStart.y,
@@ -143,10 +149,10 @@ $(function () {
 		slideResize: 0,
 		containerResize: 0,
 		touchClickDrag: false,
-		touchCycleLimit: 30,
+		touchCycleLimit: 70,
 		timeout: 0,
 		pager: '.pager',
-		touchMinDrag: 20,
+		touchMinDrag: 5,
 		rev: 0
 	}).css({
 		cursor: 'move'
