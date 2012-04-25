@@ -237,9 +237,7 @@ function detectTouchSupport(bypass) {
 	testEle.setAttribute('ontouchstart', null);
 
 	// Add jQuery support for CSS3 + vendor prefixes
-	if ( supportsTouch ) {
-		$.fn.cycle.addCSS3Support();
-	}
+	if ( supportsTouch ) { $.fn.cycle.addCSS3Support();	}
 	testEle = null;
 
 	return supportsTouch;
@@ -517,8 +515,12 @@ function buildOptions($cont, $slides, els, options, o) {
 	opts.before = opts.before ? [opts.before] : [];
 	opts.after = opts.after ? [opts.after] : [];
 
+	//TOUCHMOD -- ALLOW CLICKDRAGING TOUCH EMULATION, IF SPECIFIED.
+	if ( !!options.touchFx && !!options.touchClickDrag && !supportsTouch ) {
+		opts.touchPagerEvent = opts.pagerEvent;
+		supportsTouch = true;
+	}
 	//TOUCHMOD -- INTEGRATE TOUCH SUPPORT IF AVAILABLE + TRANSITION SPECIFIED
-	if ( !!opts.touchFx && !!opts.touchClickDrag ) supportsTouch = true;
 	if ( !!opts.touchFx ) {
 		integrateTouch(opts, cont);
 	}
