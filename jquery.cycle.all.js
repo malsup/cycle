@@ -250,18 +250,8 @@ $.fn.cycle.addCSS3Support = function () {
 	var extraSupport = [ 'transitionDuration', 'transitionDelay', 'transform', 'transformOrigin', 'transformStyle',
 					  'transitionProperty', 'perspective', 'backfaceVisibility' ];
 
-	var checkSupportForCSS3d = false;
-	if ( navigator.userAgent.match(/webkit/gi) ) {
-		var style3d = $('<style type="text/css"> @media (transform-3d),(-o-transform-3d),(-moz-transform-3d),(-ms-transform-3d),(-webkit-transform-3d){ #test3dSupp { display: none; } } </style>').appendTo('head');
-		var testEle3d = $('<span id="test3dSupp">&nbsp;</span>').appendTo('body');
-		checkSupportForCSS3d = !!(testEle3d.css('display') == 'none');
-		style3d.remove();
-		testEle3d.remove();
-		style3d = null;
-		testEle3d = null;
-	} else {
-		checkSupportForCSS3d = !navigator.userAgent.match(/webkit/gi);
-	}
+	var checkSupportForCSS3d = !!( navigator.userAgent.match(/ipod|ipad|iphone/gi) );
+
 	if ( checkSupportForCSS3d ) {
 		var totalsup = addSupportFor.join('|') + '|' + extraSupport.join('|');
 		addSupportFor = totalsup.split('|');
@@ -356,7 +346,7 @@ function integrateTouch (opts, cont) {
 
 
 		//TOUCHMOD -- ADD CSS RULES TO HELP ENGAGE iOS Hardware Acceleration
-		$(opts.elements).css( { backfaceVisibility: 'hidden',  userSelect: 'none', userModify: 'read-only', userDrag: 'none', tapHighlightColor: 'transparent' } );
+		$(opts.elements).css( { transform: 'translate3d(0,0,0)',  userSelect: 'none', userModify: 'read-only', userDrag: 'none', tapHighlightColor: 'transparent' } );
 
 		//TOUCHMOD -- TOUCH BEHAVIOR INITIALIZATION
 		var initSlidePos, snapSlideBack, dragSlideTick;
