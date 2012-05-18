@@ -12,6 +12,8 @@
 	<link rel="stylesheet" href="touchexample/css/style.css">
 
 	<script src="touchexample/js/libs/jquery.min.js"></script>
+	<script src="jquery.cycle.all.js"></script>
+
 </head>
 <body>
 
@@ -55,15 +57,11 @@
 	</div>
 </div>
 
-
-<!-- SCRIPTS -- DONT DISPLAY ELEMENTS BENEATH THESE -->
-<script src="jquery.cycle.all.js"></script>
-
 <script type="text/javascript">
-$(function () {
+$(document).ready(function () {
 	$('#cycle').cycle({
-		fx: 'scrollHorz',
-		speed: 300,
+		fx: 'touchScrollHorz',
+		speed: 500,
 		touchFx: 'touchScrollHorz',
 		touchClickDrag: true,
 		timeout: 0,

@@ -9,7 +9,7 @@
  *
  * Touch Support integration features ( "TOUCHMOD" )
  * TOUCHMOD Requires: jQuery v1.4.3 or later
- * Modified By: Keegan Brown -- TOUCHMOD Version: 0.9 (APR-2012)
+ * Modified By: Keegan Brown -- TOUCHMOD Version: 0.9.1 (MAY-2012)
  *
  */
 ;(function($, undefined) {
@@ -1833,7 +1833,10 @@ $.fn.cycle.transitions.wipe = function($cont, $slides, opts) {
 
 //TOUCHMOD -- TRANSITIONS WITH TOUCH-ENHANCEMENTS
 $.fn.cycle.transitions.touchScrollHorz = function($cont, $slides, opts) {
-	//$cont.css('overflow','hidden').width();
+	if ( !!this && !this.isSetup ) {
+		$slides.css( { position: 'absolute', display: 'block', top: 0, left: 0, zIndex: 5, opacity: 1 } );
+		this.isSetup = true;
+	}
 	opts.before.push(function(curr, next, opts, fwd) {
 		var dirrev = -1;
 		if (opts.rev) {
@@ -1843,20 +1846,17 @@ $.fn.cycle.transitions.touchScrollHorz = function($cont, $slides, opts) {
 		$.fn.cycle.commonReset(curr,next,opts);
 		opts.animOut.left = fwd ? curr.cycleW * dirrev : -curr.cycleW * dirrev;
 	});
+	opts.cssFirst.left = 0;
 	opts.cssBefore.top = 0;
 	opts.animIn.left = 0;
 	opts.animOut.top = 0;
-
-	//CSS RULES TO HELP ENGAGE iOS Hardware Acceleration
-	if ( !!window.navigator.userAgent.match(/ipad|ipod|iphone/) ) {
-		$cont.parent().css( { transform: 'translate3d(0,0,0)' } );
-	}
 }
 $.fn.cycle.transitions.touchScrollHorz.activeDir = { x: 1, y: 0 }
 $.fn.cycle.transitions.touchScrollHorz.initSlidePos = function ( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart ) {
 	var move = { x: (mainContSize.width * dir.x * revdir), y: (mainContSize.height * dir.y * revdir) }
-	prevElem.css( { left: -move.x + currStart.x, top: -move.y + currStart.y, display: 'block', opacity: 1 } );
-	nextElem.css( {	left: move.x + currStart.x, top: move.y + currStart.y, display: 'block', opacity: 1 } );
+	prevElem.stop(true,false).css( { left: -move.x + currStart.x, top: -move.y + currStart.y, display: 'block', opacity: 1 } );
+	currElem.stop(true,false).css( { left: 0, top: 0, display: 'block', opacity: 1 } );
+	nextElem.stop(true,false).css( { left: move.x + currStart.x, top: move.y + currStart.y, display: 'block', opacity: 1 } );
 }
 $.fn.cycle.transitions.touchScrollHorz.snapSlideBack = function ( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart ) {
 	var move = { x: (mainContSize.width * dir.x * revdir), y: (mainContSize.height * dir.y * revdir) }
@@ -1868,17 +1868,17 @@ $.fn.cycle.transitions.touchScrollHorz.dragSlideTick = function ( opts, prevElem
 	prevElem.stop(true,false).css( {
 		left: ( ( -mainContSize.width + diffPos.pageX ) * dir.x ) + currStart.x,
 		top: ( ( -mainContSize.height + diffPos.pageY ) * dir.y ) + currStart.y,
-		display: 'block', opacity: 1
+		display: 'block', opacity: 1, zIndex: 9
 	} );
 	currElem.stop(true,false).css( {
 		left: ( ( 0 + diffPos.pageX ) * dir.x ) + currStart.x,
 		top: ( ( 0 + diffPos.pageY ) * dir.y ) + currStart.y,
-		display: 'block', opacity: 1
+		display: 'block', opacity: 1, zIndex: 10
 	} );
 	nextElem.stop(true,false).css( {
 		left: ( ( mainContSize.width + diffPos.pageX ) * dir.x ) + currStart.x,
 		top: ( ( mainContSize.height + diffPos.pageY ) * dir.y ) + currStart.y,
-		display: 'block', opacity: 1
+		display: 'block', opacity: 1, zIndex: 9
 	} );
 }
 
@@ -1898,11 +1898,6 @@ $.fn.cycle.transitions.touchScrollVert = function($cont, $slides, opts) {
 	opts.cssBefore.left = 0;
 	opts.animIn.top = 0;
 	opts.animOut.left = 0;
-
-	//CSS RULES TO HELP ENGAGE iOS Hardware Acceleration
-	if ( !!window.navigator.userAgent.match(/ipad|ipod|iphone/) ) {
-		$cont.parent().css( { transform: 'translate3d(0,0,0)' } );
-	}
 }
 $.fn.cycle.transitions.touchScrollVert.activeDir = { x: 0, y: 1 }
 $.fn.cycle.transitions.touchScrollVert.initSlidePos = function ( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart ) {
