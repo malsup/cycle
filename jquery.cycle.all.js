@@ -9,7 +9,7 @@
  *
  * Touch Support integration features ( "TOUCHMOD" )
  * TOUCHMOD Requires: jQuery v1.4.3 or later
- * Modified By: Keegan Brown -- TOUCHMOD Version: 0.9.1 (MAY-2012)
+ * Modified By: Keegan Brown -- TOUCHMOD Version: 0.9.2 (18-MAY-2012)
  *
  */
 ;(function($, undefined) {
@@ -247,15 +247,12 @@ $.fn.cycle.haveCheckedCSS3Support = false;
 $.fn.cycle.addCSS3Support = function () {
 	$.fn.cycle.haveCheckedCSS3Support = true;
 	var addSupportFor = [ 'userSelect', 'userModify', 'userDrag', 'tapHighlightColor' ];
-	var extraSupport = [ 'transitionDuration', 'transitionDelay', 'transform', 'transformOrigin', 'transformStyle',
-					  'transitionProperty', 'perspective', 'backfaceVisibility' ];
+	var extraSupport = [ 'transitionDuration', 'transitionDelay', 'transform', 'transformOrigin', 'transformStyle','transitionProperty', 'perspective', 'backfaceVisibility' ];
 
-	var checkSupportForCSS3d = !!( navigator.userAgent.match(/ipod|ipad|iphone/gi) );
+	var checkSupportForCSS3d = !!navigator.userAgent.match(/ipod|ipad|iphone/gi).length;
 
-	if ( checkSupportForCSS3d ) {
-		var totalsup = addSupportFor.join('|') + '|' + extraSupport.join('|');
-		addSupportFor = totalsup.split('|');
-	}
+	var totalsup = addSupportFor.join('|') + '|' + extraSupport.join('|');
+	addSupportFor = totalsup.split('|');
 
 	$( addSupportFor ).each( checkStyleSupport );
 }
@@ -346,7 +343,7 @@ function integrateTouch (opts, cont) {
 
 
 		//TOUCHMOD -- ADD CSS RULES TO HELP ENGAGE iOS Hardware Acceleration
-		$(opts.elements).css( { transform: 'translate3d(0,0,0)',  userSelect: 'none', userModify: 'read-only', userDrag: 'none', tapHighlightColor: 'transparent' } );
+		$(opts.elements).css( { userSelect: 'none', userModify: 'read-only', userDrag: 'none', tapHighlightColor: 'transparent' } );
 
 		//TOUCHMOD -- TOUCH BEHAVIOR INITIALIZATION
 		var initSlidePos, snapSlideBack, dragSlideTick;
@@ -455,9 +452,10 @@ function integrateTouch (opts, cont) {
 			}
 		}
 		var dragCancel = function () {
+			snapSlideBack( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart );
 			dragging = false;
 			dragstate = null;
-			snapSlideBack( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart );
+			opts.busy = false;
 		}
 
 		$cont.bind({
@@ -1833,6 +1831,7 @@ $.fn.cycle.transitions.wipe = function($cont, $slides, opts) {
 
 //TOUCHMOD -- TRANSITIONS WITH TOUCH-ENHANCEMENTS
 $.fn.cycle.transitions.touchScrollHorz = function($cont, $slides, opts) {
+	$cont.css( { overflow: 'hidden', transform: 'translate3d(0,0,0)' });
 	if ( !!this && !this.isSetup ) {
 		$slides.css( { position: 'absolute', display: 'block', top: 0, left: 0, zIndex: 5, opacity: 1 } );
 		this.isSetup = true;
@@ -1883,7 +1882,7 @@ $.fn.cycle.transitions.touchScrollHorz.dragSlideTick = function ( opts, prevElem
 }
 
 $.fn.cycle.transitions.touchScrollVert = function($cont, $slides, opts) {
-	$cont.css('overflow','hidden');
+	$cont.css( { overflow: 'hidden', transform: 'translate3d(0,0,0)' });
 	opts.before.push(function(curr, next, opts, fwd) {
 		var dirrev = -1;
 		if (opts.rev) {
@@ -1894,7 +1893,7 @@ $.fn.cycle.transitions.touchScrollVert = function($cont, $slides, opts) {
 		//opts.cssBefore.top = fwd ? (1-next.cycleH) : (next.cycleH-1);
 		opts.animOut.top = fwd ? curr.cycleH*dirrev : -curr.cycleH*dirrev;
 	});
-	//opts.cssFirst.top = 0;
+	opts.cssFirst.top = 0;
 	opts.cssBefore.left = 0;
 	opts.animIn.top = 0;
 	opts.animOut.left = 0;
@@ -1903,6 +1902,7 @@ $.fn.cycle.transitions.touchScrollVert.activeDir = { x: 0, y: 1 }
 $.fn.cycle.transitions.touchScrollVert.initSlidePos = function ( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart ) {
 	var move = { x: (mainContSize.width * dir.x * revdir), y: (mainContSize.height * dir.y * revdir) }
 	prevElem.css( { left: -move.x + currStart.x, top: -move.y + currStart.y, display: 'block', opacity: 1 } );
+	currElem.stop(true,false).css( { left: 0, top: 0, display: 'block', opacity: 1 } );
 	nextElem.css( {	left: move.x + currStart.x, top: move.y + currStart.y, display: 'block', opacity: 1 } );
 }
 $.fn.cycle.transitions.touchScrollVert.snapSlideBack = function ( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart ) {
