@@ -231,7 +231,7 @@ function destroy(cont, opts) {
 //
 // BEGIN TOUCHMOD SUPPORT HANDLING
 var supportsTouch = false;
-function detectTouchSupport(bypass) {
+ $.fn.cycle.detectTouchSupport = function (bypass) {
 	var testEle = document.createElement('div');
 	testEle.setAttribute('ontouchstart', 'return;');
 	supportsTouch = !!testEle.ontouchstart;
@@ -241,6 +241,7 @@ function detectTouchSupport(bypass) {
 	if ( supportsTouch ) { $.fn.cycle.addCSS3Support();	}
 	testEle = null;
 
+	$.fn.cycle.supportsTouch = supportsTouch;
 	return supportsTouch;
 }
 $.fn.cycle.haveCheckedCSS3Support = false;
@@ -482,7 +483,7 @@ function integrateTouch (opts, cont) {
 function buildOptions($cont, $slides, els, options, o) {
 
 	//TOUCHMOD -- DETECT TOUCH SUPPORT ON DEVICE
-	supportsTouch = detectTouchSupport();
+	supportsTouch =  $.fn.cycle.detectTouchSupport();
 	if ( !!supportsTouch ) {
 		$.fn.cycle.defaults.pauseOnTouch = 1;
 	}
