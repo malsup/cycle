@@ -231,7 +231,7 @@ function destroy(cont, opts) {
 //
 // BEGIN TOUCHMOD SUPPORT HANDLING
 var supportsTouch = false;
- $.fn.cycle.detectTouchSupport = function (bypass) {
+$.fn.cycle.detectTouchSupport = function (bypass) {
 	var testEle = document.createElement('div');
 	testEle.setAttribute('ontouchstart', 'return;');
 	supportsTouch = !!testEle.ontouchstart;
