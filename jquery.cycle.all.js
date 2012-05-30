@@ -464,7 +464,7 @@ function integrateTouch (opts, cont) {
 			touchstart: dragStart,
 			touchmove: dragMove,
 			touchend: dragEnd,
-			touchcancel: dragCancel
+			touchcancel: dragEnd
 		});
 
 		if (opts.touchClickDrag) {
