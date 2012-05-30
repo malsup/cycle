@@ -231,7 +231,7 @@ function destroy(cont, opts) {
 //
 // BEGIN TOUCHMOD SUPPORT HANDLING
 var supportsTouch = false;
-$.fn.cycle.detectTouchSupport = function (bypass) {
+var detectTouchSupport = function (bypass) {
 	var testEle = document.createElement('div');
 	testEle.setAttribute('ontouchstart', 'return;');
 	supportsTouch = !!testEle.ontouchstart;
@@ -241,7 +241,6 @@ $.fn.cycle.detectTouchSupport = function (bypass) {
 	if ( supportsTouch ) { $.fn.cycle.addCSS3Support();	}
 	testEle = null;
 
-	$.fn.cycle.supportsTouch = supportsTouch;
 	return supportsTouch;
 }
 $.fn.cycle.haveCheckedCSS3Support = false;
@@ -250,11 +249,12 @@ $.fn.cycle.addCSS3Support = function () {
 	var addSupportFor = [ 'userSelect', 'userModify', 'userDrag', 'tapHighlightColor' ];
 	var extraSupport = [ 'transitionDuration', 'transitionDelay', 'transform', 'transformOrigin', 'transformStyle','transitionProperty', 'perspective', 'backfaceVisibility' ];
 
-	var checkSupportForCSS3d = !!navigator.userAgent.match(/ipod|ipad|iphone/gi).length;
+	var checkSupportForCSS3d = !!navigator.userAgent.match(/ipod|ipad|iphone/gi);
 
-	var totalsup = addSupportFor.join('|') + '|' + extraSupport.join('|');
-	addSupportFor = totalsup.split('|');
-
+	if ( checkSupportForCSS3d ) {
+		var totalsup = addSupportFor.join('|') + '|' + extraSupport.join('|');
+		addSupportFor = totalsup.split('|');
+	}
 	$( addSupportFor ).each( checkStyleSupport );
 }
 function checkStyleSupport( index, prop ) {
@@ -315,6 +315,7 @@ function bindClickAndDrag ($cont, touchPause, touchUnpause) {
 	});
 }
 function integrateTouch (opts, cont) {
+	//alert( "test: " + supportsTouch);
 	if ( !!supportsTouch && ( !!opts.touchFx || $.fn.cycle.transitions[opts.fx].activeDir ) ) {
 
 		var getTouchPos = function (event) {
@@ -483,7 +484,7 @@ function integrateTouch (opts, cont) {
 function buildOptions($cont, $slides, els, options, o) {
 
 	//TOUCHMOD -- DETECT TOUCH SUPPORT ON DEVICE
-	supportsTouch =  $.fn.cycle.detectTouchSupport();
+	supportsTouch = detectTouchSupport();
 	if ( !!supportsTouch ) {
 		$.fn.cycle.defaults.pauseOnTouch = 1;
 	}
