@@ -9,7 +9,7 @@
  *
  * Touch Support integration features ( "TOUCHMOD" )
  * TOUCHMOD Requires: jQuery v1.4.3 or later
- * Modified By: Keegan Brown -- TOUCHMOD Version: 0.9.2 (18-MAY-2012)
+ * Modified By: Keegan Brown -- TOUCHMOD Version: 0.9.3 (6-JUNE-2012)
  *
  */
 ;(function($, undefined) {
@@ -222,6 +222,11 @@ function destroy(cont, opts) {
 		$.each(opts.pagerAnchors || [], function() {
 			this.unbind().remove();
 		});
+
+	//destory touchmod
+	if ( opts.touchFx ) {
+		destroyTouch(cont, opts);
+	}
 	opts.pagerAnchors = null;
 	$(cont).unbind('mouseenter.cycle mouseleave.cycle');
 	if (opts.destroy) // callback
@@ -313,6 +318,18 @@ function bindClickAndDrag ($cont, touchPause, touchUnpause) {
 		mouseover: touchPause,
 		mouseout: touchUnpause
 	});
+}
+function destroyTouch (cont, opts) {
+	var $cont = $(cont);
+	$cont.unbind('touchstart touchmove touchend touchcancel');
+
+	if (opts.touchClickDrag) {
+		$cont.unbind({
+			mousedown: dragStart,
+			mousemove: dragMove,
+			mouseup: dragEnd
+		});
+	}
 }
 function integrateTouch (opts, cont) {
 	//alert( "test: " + supportsTouch);
