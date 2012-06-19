@@ -324,11 +324,7 @@ function destroyTouch (cont, opts) {
 	$cont.unbind('touchstart touchmove touchend touchcancel');
 
 	if (opts.touchClickDrag) {
-		$cont.unbind({
-			mousedown: dragStart,
-			mousemove: dragMove,
-			mouseup: dragEnd
-		});
+		$cont.unbind( 'mousedown mousemove mouseup' );
 	}
 }
 function integrateTouch (opts, cont) {
