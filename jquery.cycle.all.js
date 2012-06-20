@@ -9,7 +9,7 @@
  *
  * Touch Support integration features ( "TOUCHMOD" )
  * TOUCHMOD Requires: jQuery v1.4.3 or later
- * Modified By: Keegan Brown -- TOUCHMOD Version: 0.9.3 (6-JUNE-2012)
+ * Modified By: Keegan Brown -- TOUCHMOD Version: 0.9.4 (20-JUNE-2012)
  *
  */
 ;(function($, undefined) {
@@ -313,13 +313,9 @@ function bindClickAndDrag ($cont, touchPause, touchUnpause) {
 		mouseover: touchPause,
 		mouseout: touchUnpause
 	});
-	//TOUCHMOD -- PREVENT TRANSITIONS IF USER IS HOVERING OVER CYCLE + opts.touchClickDrag == true
-	$cont.bind({
-		mouseover: touchPause,
-		mouseout: touchUnpause
-	});
 }
 function destroyTouch (cont, opts) {
+	//TOUCHMOD -- DESTROY TOUCHMOD RELATED EVENT LISTENERS.
 	var $cont = $(cont);
 	$cont.unbind('touchstart touchmove touchend touchcancel');
 
@@ -400,7 +396,7 @@ function integrateTouch (opts, cont) {
 				var prevNum = (opts.elements.length + opts.currSlide - 1) % opts.elements.length;
 				var nextNum = (opts.elements.length + opts.currSlide + 1) % opts.elements.length;
 
-				$(opts.elements).stop(true,false);
+				$(opts.elements).stop(true,true);
 
 				prevElem = $( opts.elements[prevNum] );
 				currElem = $( opts.elements[opts.currSlide] );
@@ -441,6 +437,9 @@ function integrateTouch (opts, cont) {
 
 				opts.fx = touchFx;
 				opts.easing = 'linear';
+
+				$(opts.elements).stop(true,true);
+
 				if ( dragstate !== 'locked' && dragging && !!dir.x && Math.abs(diffPos.pageX) > changeCycle ) {
 					opts.speed = opts.speedIn = opts.speedOut = Math.round( opts.speed * ( ( mainContSize.width - (mainContSize.width/4) - Math.abs( diffPos.pageX ) ) / mainContSize.width ) ) + 50;
 					if ( diffPos.pageX < 0 ) advance(opts,1);
@@ -462,23 +461,26 @@ function integrateTouch (opts, cont) {
 				dragging = false;
 				dragstate = null;
 				event.preventDefault();
-			} else {
-				dragCancel();
 			}
 		}
-		var dragCancel = function () {
+		var dragCancel = function (e) {
+			if ( !!e.originalEvent && !!e.originalEvent.touches && !!e.originalEvent.touches.length ) {
+				abortDrag();
+			}
+		}
+		var abortDrag = function () {
 			snapSlideBack( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart );
 			dragging = false;
 			dragstate = null;
 			opts.busy = false;
 		}
 
-		$cont.bind({
+		$cont.bind( {
 			touchstart: dragStart,
 			touchmove: dragMove,
 			touchend: dragEnd,
-			touchcancel: dragEnd
-		});
+			touchcancel: dragCancel
+		} );
 
 		if (opts.touchClickDrag) {
 			$cont.bind({
