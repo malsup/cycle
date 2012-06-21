@@ -323,8 +323,38 @@ function destroyTouch (cont, opts) {
 		$cont.unbind( 'mousedown mousemove mouseup' );
 	}
 }
+
+// Request Animation Frame Pollyfill
+function polyfillRequestAnimFrame (window) {
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame =
+          window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+}
+
 function integrateTouch (opts, cont) {
 	//alert( "test: " + supportsTouch);
+
+	polyfillRequestAnimFrame(window);
+
 	if ( !!supportsTouch && ( !!opts.touchFx || $.fn.cycle.transitions[opts.fx].activeDir ) ) {
 
 		var getTouchPos = function (event) {
@@ -390,7 +420,9 @@ function integrateTouch (opts, cont) {
 		//TOUCHMOD -- TOUCH CORE FUNCTIONALITY -- GETTING POSITION OF TOUCH EVENTS, PREPARING ELEMENTS FOR DRAGGING
 		var dragStart = function (event) {
 			if ( !!!opts.busy ) {
-				var currPos = getTouchPos(event);
+				window.cycle_touchMoveCurrentPos = getTouchPos(event);
+				var currPos = window.cycle_touchMoveCurrentPos;
+
 				initPos.pageX = currPos.pageX - initPos.pageX;
 				initPos.pageY = currPos.pageY - initPos.pageY;
 				var prevNum = (opts.elements.length + opts.currSlide - 1) % opts.elements.length;
@@ -412,8 +444,9 @@ function integrateTouch (opts, cont) {
 				//event.preventDefault();
 			}
 		}
-		var dragMove = function (event) {
-			var currPos = getTouchPos(event);
+
+		var dragFrameTick = function () {
+			var currPos = window.cycle_touchMoveCurrentPos;
 			if ( dragstate !== 'dragging' && !!opts.touchMinDrag &&
 				( Math.abs( diffPos.pageX ) * dir.y > opts.touchMinDrag || Math.abs( diffPos.pageY ) * dir.x > opts.touchMinDrag ) ) {
 				dragstate = 'locked';
@@ -425,12 +458,24 @@ function integrateTouch (opts, cont) {
 				if ( dragstate !== 'locked' && ( Math.abs( diffPos.pageX ) * dir.x > opts.touchMinDrag || Math.abs( diffPos.pageY ) * dir.y > opts.touchMinDrag ) ) {
 					dragSlideTick( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart );
 					dragstate = 'dragging';
-					event.preventDefault();
 				} else {
 					snapSlideBack( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart );
 				}
 			}
+			window.requestAnimationFrame(dragFrameTick);
 		}
+		window.requestAnimationFrame( dragFrameTick );
+
+
+		var dragMove = function (event) {
+			window.cycle_touchMoveCurrentPos = getTouchPos(event);
+			if ( dragstate == 'dragging' ) {
+				event.preventDefault();
+			}
+		}
+
+		window.cycle_touchMoveCurrentPos = getTouchPos();
+
 		var dragEnd = function (event) {
 			if ( !!!opts.busy && dragging ) {
 				var cacheOpts = { speed: opts.speed, fx: opts.fx, ease: opts.easing }
@@ -455,6 +500,7 @@ function integrateTouch (opts, cont) {
 				opts.fx = cacheOpts.fx;
 				opts.easing = cacheOpts.ease;
 
+				//window.cycle_touchMoveCurrentPos = getTouchPos();
 				initPos = getTouchPos();
 				diffPos = getTouchPos();
 
@@ -470,6 +516,11 @@ function integrateTouch (opts, cont) {
 		}
 		var abortDrag = function () {
 			snapSlideBack( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart );
+
+			//window.cycle_touchMoveCurrentPos = getTouchPos();
+			//initPos = getTouchPos();
+			//diffPos = getTouchPos();
+
 			dragging = false;
 			dragstate = null;
 			opts.busy = false;
