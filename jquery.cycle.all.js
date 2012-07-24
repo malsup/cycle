@@ -255,19 +255,6 @@ var detectTouchSupport = function (bypass) {
 	return supportsTouch;
 }
 $.fn.cycle.haveCheckedCSS3Support = false;
-$.fn.cycle.addCSS3Support = function () {
-	$.fn.cycle.haveCheckedCSS3Support = true;
-	var addSupportFor = [ 'userSelect', 'userModify', 'userDrag', 'tapHighlightColor' ];
-	var extraSupport = [ 'transitionDuration', 'transitionDelay', 'transform', 'transformOrigin', 'transformStyle','transitionProperty', 'transition', 'perspective', 'backfaceVisibility' ];
-
-	var checkSupportForCSS3d = !!navigator.userAgent.match(/ipod|ipad|iphone/gi);
-
-	if ( checkSupportForCSS3d ) {
-		var totalsup = addSupportFor.join('|') + '|' + extraSupport.join('|');
-		addSupportFor = totalsup.split('|');
-	}
-	$( addSupportFor ).each( checkStyleSupport );
-}
 $.fn.cycle.checkStyleSupport = function checkStyleSupport ( index, prop ) {
 	var vendorProp, supportedProp,
 		// capitalize first character of the prop to test vendor prefix
@@ -305,6 +292,19 @@ $.fn.cycle.checkStyleSupport = function checkStyleSupport ( index, prop ) {
 		}
 	}
 	return supportedProp;
+}
+$.fn.cycle.addCSS3Support = function () {
+	$.fn.cycle.haveCheckedCSS3Support = true;
+	var addSupportFor = [ 'userSelect', 'userModify', 'userDrag', 'tapHighlightColor' ];
+	var extraSupport = [ 'transitionDuration', 'transitionDelay', 'transform', 'transformOrigin', 'transformStyle','transitionProperty', 'transition', 'perspective', 'backfaceVisibility' ];
+
+	var checkSupportForCSS3d = !!navigator.userAgent.match(/ipod|ipad|iphone/gi);
+
+	if ( checkSupportForCSS3d ) {
+		var totalsup = addSupportFor.join('|') + '|' + extraSupport.join('|');
+		addSupportFor = totalsup.split('|');
+	}
+	$( addSupportFor ).each( $.fn.cycle.checkStyleSupport );
 }
 function bindTouchPause ($cont, touchPause, touchUnpause) {
 	//TOUCHMOD -- ADD PAUSE ON TOUCH BINDINGS
