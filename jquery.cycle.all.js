@@ -243,8 +243,9 @@ var detectTouchSupport = function (bypass) {
 			 'createTouch' in document &&
 			 typeof TouchEvent != "undefined" &&
 			 typeof Touch == "object" &&
-			 "ontouchend" in document) {
-			supportsTouch = !!testEle.ontouchstart;
+			 "ontouchend" in document )
+		{
+			supportsTouch = true;
 		}
 	} catch (e) { supportsTouch = false; }
 
