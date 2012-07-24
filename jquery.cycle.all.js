@@ -238,14 +238,18 @@ function destroy(cont, opts) {
 // BEGIN TOUCHMOD SUPPORT HANDLING
 var supportsTouch = false;
 var detectTouchSupport = function (bypass) {
-	var testEle = document.createElement('div');
-	testEle.setAttribute('ontouchstart', 'return;');
-	supportsTouch = !!testEle.ontouchstart;
-	testEle.setAttribute('ontouchstart', null);
+	try {
+		if ( 'ontouchstart' in window &&
+			 'createTouch' in document &&
+			 typeof TouchEvent != "undefined" &&
+			 typeof Touch == "object" &&
+			 "ontouchend" in document) {
+			supportsTouch = !!testEle.ontouchstart;
+		}
+	} catch (e) { supportsTouch = false; }
 
 	// Add jQuery support for CSS3 + vendor prefixes
 	if ( supportsTouch ) { $.fn.cycle.addCSS3Support();	}
-	testEle = null;
 
 	return supportsTouch;
 }
