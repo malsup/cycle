@@ -134,7 +134,7 @@ body {
     max-width: 980px;
     margin: 0 auto;
     text-align: left;
-    -webkit-transform: translate3d(0,0,0);
+    /*-webkit-transform: translate3d(0,0,0);*/
 	background-color: #000;
 	position: relative;
 }
