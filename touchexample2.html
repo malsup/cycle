@@ -145,15 +145,15 @@ $(function () {
 	$('#cycle').cycle({
 		fx: 'customTouch',
 		speed: 500,
-		touchFx: 'customTouch',
 		slideResize: 0,
 		containerResize: 0,
-		touchClickDrag: false,
-		touchCycleLimit: 70,
 		timeout: 0,
 		pager: '.pager',
-		touchMinDrag: 5,
-		rev: 0
+		rev: 0,
+		touchFx: 'customTouch',
+		touchClickDrag: true,
+		touchCycleLimit: 70,
+		touchMinDrag: 5
 	})
 });
 </script>

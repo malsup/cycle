@@ -15,7 +15,6 @@
 			-webkit-transform: translate3d(0,0,0);
 			height: 300px;
 		}
-
 	</style>
 
 	<script src="touchexample/js/libs/jquery.min.js"></script>
@@ -90,10 +89,6 @@ $(function () {
 			transitionProperty : String($.support['transform']).toLowerCase().replace(/(\w+)(?=transform)/,'-$1-') + ', left',
 			transitionDuration : '0s'
 		});
-		$slides.children().css({
-			//transformStyle: 'flat',
-			//backfaceVisibility : "hidden"
-		});
 
 		$cont.css({
 			overflow :'hidden',
@@ -103,7 +98,6 @@ $(function () {
 		});
 
 		opts.before.push(function(curr, next, opts, fwd) {
-
 			var $curr = $(curr),
 				$next = $(next),
 				dirrev = -1,
@@ -163,53 +157,7 @@ $(function () {
 				});
 			}
 			setTimeout( transition, 1);
-			//opts.cssBefore.left = fwd ? (next.cycleW-1) : (1-next.cycleW);
-			//opts.animOut.left = fwd ? -curr.cycleW : curr.cycleW;
 		});
-		opts.after.push(function(curr, next, opts, fwd) {
-/*
-			var $curr = $(curr),
-				$next = $(next),
-				dirrev = -1,
-				folddir = 1,
-				orgdir = '100% 50%',
-				nextdir = '0% 50%',
-				pushlen = opts.$cont.width();
-
-			if (opts.rev) {
-				fwd = !fwd;
-				dirrev = 1;
-			}
-			if ( !fwd ) {
-				folddir = -1;
-				orgdir = '0% 50%';
-				nextdir = '100% 50%';
-			}
-
-			console.log( "$curr: " + pushlen*-folddir );
-
-			$curr.css({
-				top: 0,
-				left: pushlen*-folddir,
-				transform : 'rotateY('+(90*-folddir)+'deg) translate3d(0,0,0)',
-				//transitionDuration : opts.speed+'ms',
-				transformOrigin : orgdir
-			});
-			$next.css({
-				top: 0,
-				left: 0,
-				display : 'block',
-				transform : 'rotateY(0deg) translate3d(0,0,0)',
-				//transitionDuration : opts.speed+'ms',
-				transformOrigin : nextdir
-			});
-*/
-			//$slides.css( { transform: 'rotateY(0) translate3d(0,0,0)', transitionDuration: 0 } );
-		});
-		//opts.cssBefore.top = 0;
-		//opts.animIn.left = 0;
-		//opts.animIn.transitionDuration = '0ms';
-		//opts.animOut.transitionDuration = '0ms';
 	}
 	$.fn.cycle.transitions.touchFoldHorz = function($cont, $slides, opts) {
 		if ( !$.fn.cycle.haveCheckedCSS3Support ) {
@@ -406,10 +354,10 @@ $(function () {
 	$('#cycle').cycle({
 		fx: 'foldHorz',
 		speed: 500,
+		timeout: 8000,
+		pager: '.pager',
 		touchFx: 'touchFoldHorz',
-		touchClickDrag: true,
-		timeout: 4000,
-		pager: '.pager'
+		touchClickDrag: true
 	})
 });
 </script>
