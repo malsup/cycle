@@ -1,8 +1,12 @@
-Touch Integration
+Cycle + Touch
 ===================
 
-* [Touch Example 1](http://www.devpam.com/touch-cycle/touchexample1.html)
-* [Touch Example 2](http://www.devpam.com/touch-cycle/touchexample2.html)
+Fork homepage: [http://keeganbrown.github.com/cycle/] (http://keeganbrown.github.com/cycle/)
+
+* [Simple Example] (http://keeganbrown.github.com/cycle/touchexample1.html)
+* [Custom Transition Example] (http://keeganbrown.github.com/cycle/touchexample2.html)
+* [Super Fancy 3D Custom Transition] (http://keeganbrown.github.com/cycle/touchexample3.html)
+* [Example with only 2 Slides] (http://keeganbrown.github.com/cycle/touchexample4.html)
 
 Integrating touch-compatibility requires a number of user-settable new options, and some modification/addition to core functionality in cycle.
 
