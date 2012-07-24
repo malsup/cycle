@@ -242,7 +242,6 @@ var detectTouchSupport = function (bypass) {
 		if ( 'ontouchstart' in window &&
 			 'createTouch' in document &&
 			 typeof TouchEvent != "undefined" &&
-			 typeof Touch == "object" &&
 			 "ontouchend" in document )
 		{
 			supportsTouch = true;
