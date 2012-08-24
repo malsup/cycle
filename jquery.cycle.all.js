@@ -6,6 +6,11 @@
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
+ *
+ * Touch Support integration features ( "TOUCHMOD" )
+ * TOUCHMOD Requires: jQuery v1.4.3 or later
+ * Modified By: Keegan Brown -- TOUCHMOD Version: 0.9.5 (26-JULY-2012)
+ *
  */
 ;(function($, undefined) {
 "use strict";
@@ -22,7 +27,7 @@ if ($.support === undefined) {
 function debug(s) {
 	if ($.fn.cycle.debug)
 		log(s);
-}		
+}
 function log() {
 	if (window.console && console.log)
 		console.log('[cycle] ' + Array.prototype.join.call(arguments,' '));
@@ -66,7 +71,7 @@ $.fn.cycle = function(options, arg2) {
 			return;
 
 		opts.updateActivePagerLink = opts.updateActivePagerLink || $.fn.cycle.updateActivePagerLink;
-		
+
 		// stop existing slideshow for this container (if there is one)
 		if (this.cycleTimeout)
 			clearTimeout(this.cycleTimeout);
@@ -182,7 +187,7 @@ function handleArguments(cont, options, arg2) {
 		return false;
 	}
 	return options;
-	
+
 	function checkInstantResume(isPaused, arg2, cont) {
 		if (!isPaused && arg2 === true) { // resume now!
 			var options = $(cont).data('cycle.opts');
@@ -196,6 +201,7 @@ function handleArguments(cont, options, arg2) {
 			}
 			go(options.elements, options, 1, !options.backwards);
 		}
+		return true;
 	}
 }
 
@@ -212,19 +218,363 @@ function destroy(cont, opts) {
 		$(opts.next).unbind(opts.prevNextEvent);
 	if (opts.prev)
 		$(opts.prev).unbind(opts.prevNextEvent);
-	
+
 	if (opts.pager || opts.pagerAnchorBuilder)
 		$.each(opts.pagerAnchors || [], function() {
 			this.unbind().remove();
 		});
+
+	//destory touchmod
+	if ( opts.touchFx ) {
+		destroyTouch(cont, opts);
+	}
 	opts.pagerAnchors = null;
 	$(cont).unbind('mouseenter.cycle mouseleave.cycle');
 	if (opts.destroy) // callback
 		opts.destroy(opts);
 }
 
+//
+// BEGIN TOUCHMOD SUPPORT HANDLING
+var supportsTouch = false;
+var detectTouchSupport = function (bypass) {
+	try {
+		if ( 'ontouchstart' in window &&
+			 typeof TouchEvent != "undefined" &&
+			 "ontouchend" in document )
+		{
+			supportsTouch = true;
+		}
+	} catch (e) { supportsTouch = false; }
+
+	// Add jQuery support for CSS3 + vendor prefixes
+	if ( supportsTouch ) { $.fn.cycle.addCSS3Support();	}
+
+	return supportsTouch;
+}
+$.fn.cycle.haveCheckedCSS3Support = false;
+$.fn.cycle.checkStyleSupport = function checkStyleSupport ( index, prop ) {
+	var vendorProp, supportedProp,
+		// capitalize first character of the prop to test vendor prefix
+		capProp = prop.charAt(0).toUpperCase() + prop.slice(1),
+		prefixes = [ "Moz", "Webkit", "O", "ms" ],
+		div = document.createElement( "div" );
+
+	if ( prop in div.style ) {
+		// browser supports standard CSS property name
+		supportedProp = prop;
+	} else {
+		// otherwise test support for vendor-prefixed property names
+		for ( var i = 0; i < prefixes.length; i++ ) {
+			vendorProp = prefixes[i] + capProp;
+			if ( vendorProp in div.style ) {
+				supportedProp = vendorProp;
+				break;
+			}
+		}
+	}
+
+	// avoid memory leak in IE
+	div = null;
+	// add property to $.support so it can be accessed elsewhere
+	$.support[ prop ] = supportedProp;
+
+	if ( !!supportedProp && supportedProp !== prop ) {
+		$.cssHooks[prop] = {
+		  get: function( elem, computed, extra ) {
+			return $.css( elem, supportedProp );
+		  },
+		  set: function( elem, value) {
+			elem.style[ supportedProp ] = value;
+		  }
+		}
+	}
+	return supportedProp;
+}
+$.fn.cycle.addCSS3Support = function () {
+	$.fn.cycle.haveCheckedCSS3Support = true;
+	var addSupportFor = [ 'userSelect', 'userModify', 'userDrag', 'tapHighlightColor' ];
+	var extraSupport = [ 'transitionDuration', 'transitionDelay', 'transform', 'transformOrigin', 'transformStyle','transitionProperty', 'transition', 'perspective', 'backfaceVisibility' ];
+
+	var checkSupportForCSS3d = !!navigator.userAgent.match(/ipod|ipad|iphone/gi);
+
+	if ( checkSupportForCSS3d ) {
+		var totalsup = addSupportFor.join('|') + '|' + extraSupport.join('|');
+		addSupportFor = totalsup.split('|');
+	}
+	$( addSupportFor ).each( $.fn.cycle.checkStyleSupport );
+}
+function bindTouchPause ($cont, touchPause, touchUnpause) {
+	//TOUCHMOD -- ADD PAUSE ON TOUCH BINDINGS
+	$cont.bind({
+		touchstart: touchPause,
+		touchend: touchUnpause
+	});
+}
+function bindClickAndDrag ($cont, touchPause, touchUnpause) {
+	//TOUCHMOD -- CLICK AND DRAG BEHAVIOR
+	// 			  FOR EMULATING TOUCH EVENTS ON DESKTOP
+	$cont.bind({
+		mouseover: touchPause,
+		mouseout: touchUnpause
+	});
+}
+function onTouchPause () {
+	$(this).data( 'touchPauseFlag', true );
+	this.cyclePause++;
+	triggerPause(this, true);
+}
+function onTouchUnPause () {
+	var pauseFlag = !!$(this).data( 'touchPauseFlag' );
+	if (pauseFlag)
+		this.cyclePause--;
+	triggerPause(this, true);
+	$(this).data( 'touchPauseFlag', false );
+}
+
+function destroyTouch (cont, opts) {
+	//TOUCHMOD -- DESTROY TOUCHMOD RELATED EVENT LISTENERS.
+	var $cont = $(cont);
+	$cont.unbind('touchstart touchmove touchend touchcancel');
+
+	if (opts.touchClickDrag) {
+		$cont.unbind( 'mousedown mousemove mouseup' );
+	}
+}
+
+// Request Animation Frame Pollyfill
+function polyfillRequestAnimFrame (window) {
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame =
+          window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+}
+
+function integrateTouch (opts, cont) {
+	polyfillRequestAnimFrame(window);
+
+	if ( !!supportsTouch && ( !!opts.touchFx || $.fn.cycle.transitions[opts.fx].activeDir ) ) {
+
+		bindTouchPause($(cont), onTouchPause, onTouchUnPause );
+		if ( !!opts.touchClickDrag ) {
+			bindClickAndDrag($(cont), onTouchPause, onTouchUnPause );
+		}
+
+		var getTouchPos = function (event) {
+			if ( !!event && !!event.originalEvent && !!event.originalEvent.touches ) {
+				return ({ pageX: event.originalEvent.touches[0].pageX, pageY: event.originalEvent.touches[0].pageY });
+			} else if ( !!event && ( !!event.pageX || !!event.pageY ) ) {
+				return ({ pageX: event.pageX, pageY: event.pageY });
+			}
+			return ({ pageX: 0, pageY: 0 });
+		}
+
+		var initPos = getTouchPos(),
+			diffPos = getTouchPos(),
+			dragging = false,
+			prevElem, currElem, nextElem,
+			$cont = opts.$cont,
+			mainContSize = {
+				width: $cont.width(),
+				height: $cont.height()
+			},
+			touchFx = null,
+			dir = { x: 0, y: 0 },
+			currStart = { x: 0, y: 0 },
+			changeCycle = 0,
+			dragstate = null,
+			revdir = ( !!opts.rev ) ?  -1 : 1;
+
+
+		//TOUCHMOD -- ADD CSS RULES TO PREVENT ODD BEHAVIOR, EG SELECTING TEXT WHILE TOUCHMOVE
+		$(opts.elements).css( { userSelect: 'none', userModify: 'read-only', userDrag: 'none', tapHighlightColor: 'transparent' } );
+
+		//TOUCHMOD -- TOUCH BEHAVIOR INITIALIZATION
+		var initSlidePos, snapSlideBack, dragSlideTick;
+
+		//TOUCHMOD -- TOUCH TRANSITION & ASSOCIATED OPTIONS
+		if ( !!opts.touchFx && !!$.fn.cycle.transitions[opts.touchFx] ) {
+			touchFx = opts.touchFx;
+			dir = ( !!$.fn.cycle.transitions[opts.touchFx].activeDir ) ? $.fn.cycle.transitions[opts.touchFx].activeDir : { x: 1, y: 0 };
+			if ( !!dir.x ) {
+				changeCycle = (mainContSize.width/4);
+			} else if ( !!dir.y )  {
+				changeCycle = (mainContSize.height/4);
+			}
+
+			//ALLOW USER OPTION TO OVERRIDE DEFAULT TOUCH BEHAVIOR INITIALIZATION
+			if ( !!$.fn.cycle.transitions[opts.touchFx].initSlidePos ) {
+				initSlidePos = $.fn.cycle.transitions[opts.touchFx].initSlidePos;
+			}
+			if ( !!$.fn.cycle.transitions[opts.touchFx].snapSlideBack ) {
+				snapSlideBack = $.fn.cycle.transitions[opts.touchFx].snapSlideBack;
+			}
+			if ( !!$.fn.cycle.transitions[opts.touchFx].dragSlideTick ) {
+				dragSlideTick = $.fn.cycle.transitions[opts.touchFx].dragSlideTick;
+			}
+		} else {
+			return false;
+		}
+		changeCycle = ( !!opts.touchCycleLimit ) ? opts.touchCycleLimit : changeCycle;
+
+		//TOUCHMOD -- TOUCH CORE FUNCTIONALITY -- GETTING POSITION OF TOUCH EVENTS, PREPARING ELEMENTS FOR DRAGGING
+		var dragStart = function (event) {
+			if ( !!!opts.busy ) {
+				window.cycle_touchMoveCurrentPos = getTouchPos(event);
+				var currPos = window.cycle_touchMoveCurrentPos;
+
+				initPos.pageX = currPos.pageX - initPos.pageX;
+				initPos.pageY = currPos.pageY - initPos.pageY;
+				var prevNum = (opts.elements.length + opts.currSlide - 1) % opts.elements.length;
+				var nextNum = (opts.elements.length + opts.currSlide + 1) % opts.elements.length;
+
+				$(opts.elements).stop(true,true);
+
+				prevElem = $( opts.elements[prevNum] );
+				currElem = $( opts.elements[opts.currSlide] );
+				nextElem = $( opts.elements[nextNum] );
+
+				currStart.x = currElem.position().left;
+				currStart.y = currElem.position().top;
+
+				initSlidePos( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart );
+
+				dragging = true;
+				dragstate = null;
+			}
+		}
+
+		var dragFrameTick = function () {
+			var currPos = window.cycle_touchMoveCurrentPos;
+			if ( dragstate !== 'dragging' && !!opts.touchMinDrag &&
+				( Math.abs( diffPos.pageX ) * dir.y > opts.touchMinDrag ||
+					Math.abs( diffPos.pageY ) * dir.x > opts.touchMinDrag ) ) {
+				dragstate = 'locked';
+			}
+			if ( !!!opts.busy && dragging && dragstate !== 'locked' ) {
+				diffPos.pageX = currPos.pageX - initPos.pageX;
+				diffPos.pageY = currPos.pageY - initPos.pageY;
+
+				if ( dragstate !== 'locked' && ( Math.abs( diffPos.pageX ) * dir.x > opts.touchMinDrag || Math.abs( diffPos.pageY ) * dir.y > opts.touchMinDrag ) ) {
+					dragSlideTick( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart );
+					dragstate = 'dragging';
+				} else {
+					snapSlideBack( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart );
+				}
+			}
+			window.requestAnimationFrame( dragFrameTick );
+		}
+		window.requestAnimationFrame( dragFrameTick );
+
+
+		var dragMove = function (event) {
+			window.cycle_touchMoveCurrentPos = getTouchPos(event);
+			event.preventDefault();
+
+			// allow touch scrolling.
+			var scrollDifX = ( window.cycle_touchMoveCurrentPos.pageX - initPos.pageX ) * dir.x;
+			var scrollDifY = ( window.cycle_touchMoveCurrentPos.pageY - initPos.pageY ) * dir.y;
+
+			if ( dragstate === 'locked' ) {
+				if ( !!scrollDifY ) $(window).scrollTop($(window).scrollTop() - scrollDifY);
+				if ( !!scrollDifX ) $(window).scrollLeft($(window).scrollLeft() - scrollDifX);
+			}
+		}
+
+		window.cycle_touchMoveCurrentPos = getTouchPos();
+
+		var dragEnd = function (event) {
+			if ( !!!opts.busy && dragging ) {
+				var cacheOpts = { speed: opts.speed, fx: opts.fx, ease: opts.easing }
+
+				opts.fx = touchFx;
+				opts.easing = 'linear';
+
+				$(opts.elements).stop(true,true);
+
+				if ( dragstate !== 'locked' && dragging && !!dir.x && Math.abs(diffPos.pageX) > changeCycle ) {
+					opts.speed = opts.speedIn = opts.speedOut = Math.round( opts.speed * ( ( mainContSize.width - (mainContSize.width/4) - Math.abs( diffPos.pageX ) ) / mainContSize.width ) ) + 50;
+					if ( diffPos.pageX < 0 ) advance(opts,1);
+					if ( diffPos.pageX > 0) advance(opts,0);
+				} else if ( dragstate !== 'locked' && dragging && !!dir.y && Math.abs(diffPos.pageY) > changeCycle ) {
+					opts.speed = opts.speedIn = opts.speedOut = Math.round( opts.speed * ( ( mainContSize.height - (mainContSize.height/4) - Math.abs( diffPos.pageY ) ) / mainContSize.height ) ) + 50;
+					if ( diffPos.pageY < 0 ) advance(opts,1);
+					if ( diffPos.pageY > 0) advance(opts,0);
+				} else {
+					snapSlideBack( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart );
+				}
+				opts.speed = opts.speedIn = opts.speedOut = cacheOpts.speed;
+				opts.fx = cacheOpts.fx;
+				opts.easing = cacheOpts.ease;
+
+				initPos = getTouchPos();
+				diffPos = getTouchPos();
+
+				dragging = false;
+				dragstate = null;
+				event.preventDefault();
+			}
+		}
+		var dragCancel = function (e) {
+			if ( !!e.originalEvent && !!e.originalEvent.touches && !!e.originalEvent.touches.length ) {
+				abortDrag();
+			}
+		}
+		var abortDrag = function () {
+			snapSlideBack( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart );
+
+			dragging = false;
+			dragstate = null;
+			opts.busy = false;
+		}
+
+		$cont.bind( {
+			touchstart: dragStart,
+			touchmove: dragMove,
+			touchend: dragEnd,
+			touchcancel: dragCancel
+		} );
+
+		if (opts.touchClickDrag) {
+			$cont.bind({
+				mousedown: dragStart,
+				mousemove: dragMove,
+				mouseup: dragEnd
+			});
+		}
+	}
+}
+// END TOUCHMOD SUPPORT HANDLING
+//
+
+
 // one-time initialization
 function buildOptions($cont, $slides, els, options, o) {
+
+	//TOUCHMOD -- DETECT TOUCH SUPPORT ON DEVICE
+	supportsTouch = detectTouchSupport();
+	if ( !!supportsTouch ) {
+		$.fn.cycle.defaults.pauseOnTouch = 1;
+	}
+
 	var startingSlideSpecified;
 	// support metadata plugin (v1.0 and v2.0)
 	var opts = $.extend({}, $.fn.cycle.defaults, options || {}, $.metadata ? $cont.metadata() : $.meta ? $cont.data() : {});
@@ -241,6 +591,15 @@ function buildOptions($cont, $slides, els, options, o) {
 	opts.elements = els;
 	opts.before = opts.before ? [opts.before] : [];
 	opts.after = opts.after ? [opts.after] : [];
+
+	//TOUCHMOD -- INTEGRATE TOUCH SUPPORT IF TRANSITION SPECIFIED
+	if ( !!opts.touchFx ) {
+		if ( !!options.touchClickDrag && !supportsTouch ) {
+			opts.touchPagerEvent = opts.pagerEvent;
+			supportsTouch = true;
+		}
+		integrateTouch(opts, cont);
+	}
 
 	// push some after callbacks
 	if (!$.support.opacity && opts.cleartype)
@@ -266,7 +625,7 @@ function buildOptions($cont, $slides, els, options, o) {
 		opts.startingSlide = parseInt(opts.startingSlide,10);
 		if (opts.startingSlide >= els.length || opts.startSlide < 0)
 			opts.startingSlide = 0; // catch bogus input
-		else 
+		else
 			startingSlideSpecified = true;
 	}
 	else if (opts.backwards)
@@ -359,7 +718,7 @@ function buildOptions($cont, $slides, els, options, o) {
 			});
 		});
 	}
-		
+
 	// stretch container
 	var reshape = opts.containerResize && !$cont.innerHeight();
 	if (reshape) { // do this only if container has no size http://tinyurl.com/da2oa9
@@ -376,7 +735,7 @@ function buildOptions($cont, $slides, els, options, o) {
 	}
 
 	var pauseFlag = false;  // https://github.com/malsup/cycle/issues/44
-	if (opts.pause)
+	if (opts.pause) {
 		$cont.bind('mouseenter.cycle', function(){
 			pauseFlag = true;
 			this.cyclePause++;
@@ -386,6 +745,8 @@ function buildOptions($cont, $slides, els, options, o) {
 					this.cyclePause--;
 				triggerPause(cont, true);
 		});
+	}
+
 
 	if (supportMultiTransitions(opts) === false)
 		return false;
@@ -443,7 +804,7 @@ function buildOptions($cont, $slides, els, options, o) {
 			opts.speed = $.fx.speeds[opts.speed] || parseInt(opts.speed,10);
 		if (!opts.sync)
 			opts.speed = opts.speed / 2;
-		
+
 		var buffer = opts.fx == 'none' ? 0 : opts.fx == 'shuffle' ? 500 : 250;
 		while((opts.timeout - opts.speed) < buffer) // sanitize timeout
 			opts.timeout += opts.speed;
@@ -701,7 +1062,7 @@ function go(els, opts, manual, fwd) {
 		};
 
 		debug('tx firing('+fx+'); currSlide: ' + opts.currSlide + '; nextSlide: ' + opts.nextSlide);
-		
+
 		// get ready to perform the transition
 		opts.busy = 1;
 		if (opts.fxFn) // fx function provided?
@@ -756,7 +1117,7 @@ function go(els, opts, manual, fwd) {
 	}
 	if (changed && opts.pager)
 		opts.updateActivePagerLink(opts.pager, opts.currSlide, opts.activePagerClass);
-	
+
 	function queueNext() {
 		// stage the next transition
 		var ms = 0, timeout = opts.timeout;
@@ -853,7 +1214,7 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 	}
 	else
 		a = '<a href="#">'+(i+1)+'</a>';
-		
+
 	if (!a)
 		return;
 	var $a = $(a);
@@ -875,7 +1236,7 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 
 	opts.pagerAnchors =  opts.pagerAnchors || [];
 	opts.pagerAnchors.push($a);
-	
+
 	var pagerFn = function(e) {
 		e.preventDefault();
 		opts.nextSlide = i;
@@ -890,30 +1251,37 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 		go(els,opts,1,opts.currSlide < i); // trigger the trans
 //		return false; // <== allow bubble
 	};
-	
+
 	if ( /mouseenter|mouseover/i.test(opts.pagerEvent) ) {
 		$a.hover(pagerFn, function(){/* no-op */} );
 	}
 	else {
-		$a.bind(opts.pagerEvent, pagerFn);
+		// TOUCHMOD -- INTEGRATE TOUCH FUNCTIONALITY INTO PAGERS
+		if ( !supportsTouch ) {
+			$a.bind(opts.pagerEvent, pagerFn);
+		} else {
+			$a.bind(opts.touchPagerEvent, pagerFn);
+			$a.bind(opts.pagerEvent, function (e) { e.preventDefault(); });
+			//$a.bind(opts.pagerEvent, pagerFn);
+		}
 	}
-	
+
 	if ( ! /^click/.test(opts.pagerEvent) && !opts.allowPagerClickBubble)
 		$a.bind('click.cycle', function(){return false;}); // suppress click
-	
+
 	var cont = opts.$cont[0];
 	var pauseFlag = false; // https://github.com/malsup/cycle/issues/44
 	if (opts.pauseOnPagerHover) {
 		$a.hover(
-			function() { 
+			function() {
 				pauseFlag = true;
-				cont.cyclePause++; 
+				cont.cyclePause++;
 				triggerPause(cont,true,true);
-			}, function() { 
+			}, function() {
 				if (pauseFlag)
-					cont.cyclePause--; 
+					cont.cyclePause--;
 				triggerPause(cont,true,true);
-			} 
+			}
 		);
 	}
 };
@@ -986,7 +1354,7 @@ $.fn.cycle.custom = function(curr, next, opts, cb, fwd, speedOverride) {
 	};
 	$l.animate(opts.animOut, speedOut, easeOut, function() {
 		$l.css(opts.cssAfter);
-		if (!opts.sync) 
+		if (!opts.sync)
 			fn();
 	});
 	if (opts.sync) fn();
@@ -1066,6 +1434,11 @@ $.fn.cycle.defaults = {
     sync:             1,        // true if in/out transitions should occur simultaneously
     timeout:          4000,     // milliseconds between slide transitions (0 to disable auto advance)
     timeoutFn:        null,     // callback for determining per-slide timeout value:  function(currSlideElement, nextSlideElement, options, forwardFlag)
+	touchFx:	   null,  // name of touch transition effect. Touch Functionality will not be enabled if left "null" or "false"
+	touchCycleLimit:  0,  // Number (in px) for touch gesture before a touchend event will force a cycle.
+	touchClickDrag:   0,  // true to enable mouse slide-dragging.
+	touchMinDrag: 	  0,  // Minimum (in px) before touch handling will effect positioning of the cycle
+	touchPagerEvent: 'touchstart.cycle', //Touch Event to use for pagers.
     updateActivePagerLink: null,// callback fn invoked to update the active pager link (adds/removes activePagerClass style)
     width:            null      // container width (if the 'fit' option is true, the slides will be set to this width as well)
 };
@@ -1541,5 +1914,115 @@ $.fn.cycle.transitions.wipe = function($cont, $slides, opts) {
 	opts.animIn	   = { left: 0 };
 	opts.animOut   = { left: 0 };
 };
+
+
+//TOUCHMOD -- TRANSITIONS WITH TOUCH-ENHANCEMENTS
+$.fn.cycle.transitions.touchScrollHorz = function($cont, $slides, opts) {
+	$cont.css( { overflow: 'hidden', transform: 'translate3d(0,0,0)' });
+	if ( !!this && !this.isSetup ) {
+		$slides.css( { position: 'absolute', display: 'block', top: 0, left: 0, zIndex: 5, opacity: 1 } );
+		this.isSetup = true;
+	}
+	opts.before.push(function(curr, next, opts, fwd) {
+		var dirrev = -1;
+		if (opts.rev) {
+			fwd = !fwd;
+			dirrev = 1;
+		}
+		$.fn.cycle.commonReset(curr,next,opts);
+		opts.animOut.left = fwd ? curr.cycleW * dirrev : -curr.cycleW * dirrev;
+	});
+	opts.cssFirst.left = 0;
+	opts.cssBefore.top = 0;
+	opts.animIn.left = 0;
+	opts.animOut.top = 0;
+}
+$.fn.cycle.transitions.touchScrollHorz.activeDir = { x: 1, y: 0 }
+$.fn.cycle.transitions.touchScrollHorz.initSlidePos = function ( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart ) {
+	var move = { x: (mainContSize.width * dir.x * revdir), y: (mainContSize.height * dir.y * revdir) }
+	prevElem.stop(true,false).css( { left: -move.x + currStart.x, top: -move.y + currStart.y, display: 'block', opacity: 1 } );
+	currElem.stop(true,false).css( { left: 0, top: 0, display: 'block', opacity: 1 } );
+	nextElem.stop(true,false).css( { left: move.x + currStart.x, top: move.y + currStart.y, display: 'block', opacity: 1 } );
+}
+$.fn.cycle.transitions.touchScrollHorz.snapSlideBack = function ( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart ) {
+	var move = { x: (mainContSize.width * dir.x * revdir), y: (mainContSize.height * dir.y * revdir) }
+	prevElem.stop(true,false).animate( { left: -move.x, top: -move.y }, opts.speed/4 );
+	currElem.stop(true,false).animate( { left: 0, top: 0 }, opts.speed/4 );
+	nextElem.stop(true,false).animate( { left: move.x, top: move.y }, opts.speed/4 );
+}
+$.fn.cycle.transitions.touchScrollHorz.dragSlideTick = function ( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart ) {
+	if ( diffPos.pageX * dir.x > 0 || diffPos.pageY * dir.y > 0 ) {
+		prevElem.stop(true,false).css( {
+			left: ( ( -mainContSize.width + diffPos.pageX ) * dir.x ) + currStart.x,
+			top: ( ( -mainContSize.height + diffPos.pageY ) * dir.y ) + currStart.y,
+			display: 'block', opacity: 1, zIndex: 9
+		} );
+	}
+	currElem.stop(true,false).css( {
+		left: ( ( 0 + diffPos.pageX ) * dir.x ) + currStart.x,
+		top: ( ( 0 + diffPos.pageY ) * dir.y ) + currStart.y,
+		display: 'block', opacity: 1, zIndex: 10
+	} );
+	if ( diffPos.pageX * dir.x < 0 || diffPos.pageY * dir.y < 0 ) {
+		nextElem.stop(true,false).css( {
+			left: ( ( mainContSize.width + diffPos.pageX ) * dir.x ) + currStart.x,
+			top: ( ( mainContSize.height + diffPos.pageY ) * dir.y ) + currStart.y,
+			display: 'block', opacity: 1, zIndex: 9
+		});
+	}
+}
+
+$.fn.cycle.transitions.touchScrollVert = function($cont, $slides, opts) {
+	$cont.css( { overflow: 'hidden', transform: 'translate3d(0,0,0)' });
+	opts.before.push(function(curr, next, opts, fwd) {
+		var dirrev = -1;
+		if (opts.rev) {
+			fwd = !fwd;
+			dirrev = 1;
+		}
+		$.fn.cycle.commonReset(curr,next,opts);
+		//opts.cssBefore.top = fwd ? (1-next.cycleH) : (next.cycleH-1);
+		opts.animOut.top = fwd ? curr.cycleH*dirrev : -curr.cycleH*dirrev;
+	});
+	opts.cssFirst.top = 0;
+	opts.cssBefore.left = 0;
+	opts.animIn.top = 0;
+	opts.animOut.left = 0;
+}
+$.fn.cycle.transitions.touchScrollVert.activeDir = { x: 0, y: 1 }
+$.fn.cycle.transitions.touchScrollVert.initSlidePos = function ( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart ) {
+	var move = { x: (mainContSize.width * dir.x * revdir), y: (mainContSize.height * dir.y * revdir) }
+	prevElem.css( { left: -move.x + currStart.x, top: -move.y + currStart.y, display: 'block', opacity: 1 } );
+	currElem.stop(true,false).css( { left: 0, top: 0, display: 'block', opacity: 1 } );
+	nextElem.css( {	left: move.x + currStart.x, top: move.y + currStart.y, display: 'block', opacity: 1 } );
+}
+$.fn.cycle.transitions.touchScrollVert.snapSlideBack = function ( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart ) {
+	var move = { x: (mainContSize.width * dir.x * revdir), y: (mainContSize.height * dir.y * revdir) }
+	prevElem.stop(true,false).animate( { left: -move.x, top: -move.y }, opts.speed/4 );
+	currElem.stop(true,false).animate( { left: 0, top: 0 }, opts.speed/4 );
+	nextElem.stop(true,false).animate( { left: move.x, top: move.y }, opts.speed/4 );
+}
+$.fn.cycle.transitions.touchScrollVert.dragSlideTick = function ( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart ) {
+	if ( diffPos.pageX * dir.x > 0 || diffPos.pageY * dir.y > 0 ) {
+		prevElem.stop(true,false).css( {
+			left: ( ( -mainContSize.width + diffPos.pageX ) * dir.x ) + currStart.x,
+			top: ( ( -mainContSize.height + diffPos.pageY ) * dir.y ) + currStart.y,
+			display: 'block', opacity: 1
+		});
+	}
+	currElem.stop(true,false).css( {
+		left: ( ( 0 + diffPos.pageX ) * dir.x ) + currStart.x,
+		top: ( ( 0 + diffPos.pageY ) * dir.y ) + currStart.y,
+		display: 'block', opacity: 1
+	});
+	if ( diffPos.pageX * dir.x < 0 || diffPos.pageY * dir.y < 0 ) {
+		nextElem.stop(true,false).css( {
+			left: ( ( mainContSize.width + diffPos.pageX ) * dir.x ) + currStart.x,
+			top: ( ( mainContSize.height + diffPos.pageY ) * dir.y ) + currStart.y,
+			display: 'block', opacity: 1
+		});
+	}
+}
+
 
 })(jQuery);
