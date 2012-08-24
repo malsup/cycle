@@ -490,8 +490,8 @@ function integrateTouch (opts, cont) {
 			event.preventDefault();
 
 			// allow touch scrolling.
-			var scrollDifX = ( window.cycle_touchMoveCurrentPos.pageX - initPos.pageX ) * dir.y;
-			var scrollDifY = ( window.cycle_touchMoveCurrentPos.pageY - initPos.pageY ) * dir.x;
+			var scrollDifX = ( window.cycle_touchMoveCurrentPos.pageX - initPos.pageX ) * dir.x;
+			var scrollDifY = ( window.cycle_touchMoveCurrentPos.pageY - initPos.pageY ) * dir.y;
 
 			if ( dragstate === 'locked' ) {
 				if ( !!scrollDifY ) $(window).scrollTop($(window).scrollTop() - scrollDifY);
