@@ -487,8 +487,15 @@ function integrateTouch (opts, cont) {
 
 		var dragMove = function (event) {
 			window.cycle_touchMoveCurrentPos = getTouchPos(event);
-			if ( dragstate === 'dragging' ) {
-				event.preventDefault();
+			event.preventDefault();
+
+			// allow touch scrolling.
+			var scrollDifX = ( window.cycle_touchMoveCurrentPos.pageX - initPos.pageX ) * dir.y;
+			var scrollDifY = ( window.cycle_touchMoveCurrentPos.pageY - initPos.pageY ) * dir.x;
+
+			if ( dragstate === 'locked' ) {
+				if ( !!scrollDifY ) $(window).scrollTop($(window).scrollTop() - scrollDifY);
+				if ( !!scrollDifX ) $(window).scrollLeft($(window).scrollLeft() - scrollDifX);
 			}
 		}
 
