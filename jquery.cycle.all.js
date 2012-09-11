@@ -361,7 +361,7 @@ function buildOptions($cont, $slides, els, options, o) {
 	}
 		
 	// stretch container
-	var reshape = opts.containerResize && !$cont.innerHeight();
+	var reshape = (opts.containerResize || opts.containerResizeHeight) && !$cont.innerHeight();
 	if (reshape) { // do this only if container has no size http://tinyurl.com/da2oa9
 		var maxw = 0, maxh = 0;
 		for(var j=0; j < els.length; j++) {
@@ -371,8 +371,10 @@ function buildOptions($cont, $slides, els, options, o) {
 			maxw = w > maxw ? w : maxw;
 			maxh = h > maxh ? h : maxh;
 		}
-		if (maxw > 0 && maxh > 0)
+		if (opts.containerResize && maxw > 0 && maxh > 0)
 			$cont.css({width:maxw+'px',height:maxh+'px'});
+		if (opts.containerResizeHeight && maxh > 0)
+			$cont.css({height:maxh+'px'});
 	}
 
 	var pauseFlag = false;  // https://github.com/malsup/cycle/issues/44
@@ -1024,6 +1026,7 @@ $.fn.cycle.defaults = {
     cleartype:        !$.support.opacity,  // true if clearType corrections should be applied (for IE)
     cleartypeNoBg:    false,    // set to true to disable extra cleartype fixing (leave false to force background color setting on slides)
     containerResize:  1,        // resize container to fit largest slide
+    containerResizeHeight:  0,  // resize containers height to fit the largest slide but leave the width dynamic
     continuous:       0,        // true to start next transition immediately after current one completes
     cssAfter:         null,     // properties that defined the state of the slide after transitioning out
     cssBefore:        null,     // properties that define the initial state of the slide before transitioning in
