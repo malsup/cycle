@@ -10,7 +10,7 @@
 ;(function($, undefined) {
 "use strict";
 
-var ver = '2.9999.5';
+var ver = '2.9999.6';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support === undefined) {
