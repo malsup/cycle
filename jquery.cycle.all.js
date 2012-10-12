@@ -101,6 +101,10 @@ $.fn.cycle = function(options, arg2) {
 
 function triggerPause(cont, byHover, onPager) {
 	var opts = $(cont).data('cycle.opts');
+	if(!opts){
+	 log('Options not found, "pause" ignored');
+	 return false;
+	}
 	var paused = !!cont.cyclePause;
 	if (paused && opts.paused)
 		opts.paused(cont, opts, byHover, onPager);
