@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.9999.6 (11-SEP-2012)
+ * Version: 2.9999.7 (22-OCT-2012)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
@@ -10,7 +10,7 @@
 ;(function($, undefined) {
 "use strict";
 
-var ver = '2.9999.6';
+var ver = '2.9999.7';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support === undefined) {
@@ -1443,6 +1443,7 @@ $.fn.cycle.transitions.cover = function($cont, $slides, opts) {
 	var h = $cont.height();
 	opts.before.push(function(curr, next, opts) {
 		$.fn.cycle.commonReset(curr,next,opts);
+		opts.cssAfter.display = '';
 		if (d == 'right')
 			opts.cssBefore.left = -w;
 		else if (d == 'up')
