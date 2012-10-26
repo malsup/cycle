@@ -2,7 +2,7 @@
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
  * Copyright (c) 2007-2010 M. Alsup
- * Version: 2.9999.7 (22-OCT-2012)
+ * Version: 2.9999.8 (26-OCT-2012)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.3.2 or later
@@ -10,7 +10,7 @@
 ;(function($, undefined) {
 "use strict";
 
-var ver = '2.9999.7';
+var ver = '2.9999.8';
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support === undefined) {
@@ -101,6 +101,8 @@ $.fn.cycle = function(options, arg2) {
 
 function triggerPause(cont, byHover, onPager) {
 	var opts = $(cont).data('cycle.opts');
+	if (!opts)
+		return;
 	var paused = !!cont.cyclePause;
 	if (paused && opts.paused)
 		opts.paused(cont, opts, byHover, onPager);
