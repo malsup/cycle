@@ -460,6 +460,9 @@ function integrateTouch (opts, cont) {
 				dragging = true;
 				dragstate = null;
 			}
+			if( navigator.userAgent.match(/android/gi) || location.href.match('testandroid') ) {
+				event.preventDefault();
+			}
 		}
 
 		var dragFrameTick = function () {
@@ -468,6 +471,14 @@ function integrateTouch (opts, cont) {
 				( Math.abs( diffPos.pageX ) * dir.y > opts.touchMinDrag ||
 					Math.abs( diffPos.pageY ) * dir.x > opts.touchMinDrag ) ) {
 				dragstate = 'locked';
+			}
+			if ( dragstate === 'locked' ) {
+				if( navigator.userAgent.match(/android/gi) || location.href.match('testandroid') ) {
+					var scrollDifY = $(window).scrollTop() - ( ( window.cycle_touchMoveCurrentPos.pageY - initPos.pageY ) * dir.x );
+					var scrollDifX = $(window).scrollLeft() - ( ( window.cycle_touchMoveCurrentPos.pageX - initPos.pageX ) * dir.y );
+					if ( !!scrollDifY ) $(window).scrollTop(scrollDifY);
+					if ( !!scrollDifY ) $(window).scrollLeft(scrollDifX);
+				}
 			}
 			if ( !!!opts.busy && dragging && dragstate !== 'locked' ) {
 				diffPos.pageX = currPos.pageX - initPos.pageX;
@@ -482,20 +493,11 @@ function integrateTouch (opts, cont) {
 			}
 			window.requestAnimationFrame( dragFrameTick );
 		}
-		window.requestAnimationFrame( dragFrameTick );
-
 
 		var dragMove = function (event) {
 			window.cycle_touchMoveCurrentPos = getTouchPos(event);
-			event.preventDefault();
-
-			// allow touch scrolling.
-			var scrollDifX = ( window.cycle_touchMoveCurrentPos.pageX - initPos.pageX ) * dir.x;
-			var scrollDifY = ( window.cycle_touchMoveCurrentPos.pageY - initPos.pageY ) * dir.y;
-
-			if ( dragstate === 'locked' ) {
-				if ( !!scrollDifY ) $(window).scrollTop($(window).scrollTop() - scrollDifY);
-				if ( !!scrollDifX ) $(window).scrollLeft($(window).scrollLeft() - scrollDifX);
+			if ( dragstate === 'dragging' || ( navigator.userAgent.match(/android/gi) || location.href.match('testandroid') ) ) {
+				event.preventDefault();
 			}
 		}
 
@@ -530,7 +532,6 @@ function integrateTouch (opts, cont) {
 
 				dragging = false;
 				dragstate = null;
-				event.preventDefault();
 			}
 		}
 		var dragCancel = function (e) {
@@ -560,6 +561,8 @@ function integrateTouch (opts, cont) {
 				mouseup: dragEnd
 			});
 		}
+
+		dragFrameTick();
 	}
 }
 // END TOUCHMOD SUPPORT HANDLING
