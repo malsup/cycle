@@ -9,13 +9,13 @@
  *
  * Touch Support integration features ( "TOUCHMOD" )
  * TOUCHMOD Requires: jQuery v1.4.3 or later
- * Modified By: Keegan Brown -- TOUCHMOD Version: 0.9.5 (26-JULY-2012)
+ * Modified By: Keegan Brown -- TOUCHMOD Version: 0.9.8 (08-NOV-2012)
  *
  */
 ;(function($, undefined) {
 "use strict";
 
-var ver = '2.9999.5';
+var ver = '2.9999.5' + " + TOUCHMOD";
 
 // if $.support is not defined (pre jQuery 1.3) add what I need
 if ($.support === undefined) {
@@ -297,39 +297,11 @@ $.fn.cycle.addCSS3Support = function () {
 	var extraSupport = [ 'transitionDuration', 'transitionDelay', 'transform', 'transformOrigin', 'transformStyle','transitionProperty', 'transition', 'perspective', 'backfaceVisibility' ];
 
 	var checkSupportForCSS3d = !!navigator.userAgent.match(/ipod|ipad|iphone/gi);
-
 	if ( checkSupportForCSS3d ) {
 		var totalsup = addSupportFor.join('|') + '|' + extraSupport.join('|');
 		addSupportFor = totalsup.split('|');
 	}
 	$( addSupportFor ).each( $.fn.cycle.checkStyleSupport );
-}
-function bindTouchPause ($cont, touchPause, touchUnpause) {
-	//TOUCHMOD -- ADD PAUSE ON TOUCH BINDINGS
-	$cont.bind({
-		touchstart: touchPause,
-		touchend: touchUnpause
-	});
-}
-function bindClickAndDrag ($cont, touchPause, touchUnpause) {
-	//TOUCHMOD -- CLICK AND DRAG BEHAVIOR
-	// 			  FOR EMULATING TOUCH EVENTS ON DESKTOP
-	$cont.bind({
-		mouseover: touchPause,
-		mouseout: touchUnpause
-	});
-}
-function onTouchPause () {
-	$(this).data( 'touchPauseFlag', true );
-	this.cyclePause++;
-	triggerPause(this, true);
-}
-function onTouchUnPause () {
-	var pauseFlag = !!$(this).data( 'touchPauseFlag' );
-	if (pauseFlag)
-		this.cyclePause--;
-	triggerPause(this, true);
-	$(this).data( 'touchPauseFlag', false );
 }
 
 function destroyTouch (cont, opts) {
@@ -372,12 +344,6 @@ function integrateTouch (opts, cont) {
 	polyfillRequestAnimFrame(window);
 
 	if ( !!supportsTouch && ( !!opts.touchFx || $.fn.cycle.transitions[opts.fx].activeDir ) ) {
-
-		bindTouchPause($(cont), onTouchPause, onTouchUnPause );
-		if ( !!opts.touchClickDrag ) {
-			bindClickAndDrag($(cont), onTouchPause, onTouchUnPause );
-		}
-
 		var getTouchPos = function (event) {
 			if ( !!event && !!event.originalEvent && !!event.originalEvent.touches ) {
 				return ({ pageX: event.originalEvent.touches[0].pageX, pageY: event.originalEvent.touches[0].pageY });
@@ -387,37 +353,78 @@ function integrateTouch (opts, cont) {
 			return ({ pageX: 0, pageY: 0 });
 		}
 
-		var initPos = getTouchPos(),
-			diffPos = getTouchPos(),
-			dragging = false,
-			prevElem, currElem, nextElem,
-			$cont = opts.$cont,
-			mainContSize = {
-				width: $cont.width(),
-				height: $cont.height()
-			},
-			touchFx = null,
-			dir = { x: 0, y: 0 },
-			currStart = { x: 0, y: 0 },
-			changeCycle = 0,
-			dragstate = null,
-			revdir = ( !!opts.rev ) ?  -1 : 1;
+		var SCROLLING_DRAGSTATE = "locked_for_page_scroll",
+			DRAGGING_DRAGSTATE = "dragging_cycle_elements",
+			INIT_DRAGSTATE = "init_dragging";
 
+		var $cont = opts.$cont;
+
+		opts.touch = {
+			initPos: getTouchPos(), diffPos: getTouchPos(),
+			prevElem: null, currElem: null, nextElem: null,
+			mainContSize: { width: $cont.width(), height: $cont.height() },
+			touchFx: null,
+			dir: { x: 0, y: 0 },
+			currStart: { x: 0, y: 0 },
+			changeCycle: 0, dragstate: null,
+			revdir: ( ( !!opts.rev ) ?  -1 : 1 )
+		}
+
+		//window.opts = opts;
+		var bindTouchPause = function ($cont, touchPause, touchUnpause) {
+			$(window).bind({
+				touchstart: touchPause,
+				touchend: touchUnpause
+			});
+		}
+		var bindPauseOnClickAndDrag = function ($cont, touchPause, touchUnpause) {
+			$(window).bind({
+				mouseover: touchPause,
+				mouseout: touchUnpause
+			});
+		}
+		var onTouchPause = function () {
+			$cont.data( 'touchPauseFlag', true );
+			$cont[0].cyclePause++;
+			triggerPause( $cont[0], true );
+		}
+		var onTouchUnPause = function () {
+			var pauseFlag = !!$cont.data( 'touchPauseFlag' );
+			if ( pauseFlag )
+				$cont[0].cyclePause--;
+			triggerPause( $cont[0], true );
+			$cont.data( 'touchPauseFlag', false );
+		}
+
+		bindTouchPause( $(cont), onTouchPause, onTouchUnPause );
+		if ( !!opts.touchClickDrag ) {
+			bindPauseOnClickAndDrag( $(cont), onTouchPause, onTouchUnPause );
+		}
+
+		//TOUCHMOD -- HANDLING FOR SCROLLING RESULTING JAVASCRIPT PROBLEMS
+		var abortDrag = function () {
+			opts.touch.initPos = getTouchPos();
+			opts.touch.diffPos = getTouchPos();
+			opts.touch.dragstate = null;
+		}
 
 		//TOUCHMOD -- ADD CSS RULES TO PREVENT ODD BEHAVIOR, EG SELECTING TEXT WHILE TOUCHMOVE
-		$(opts.elements).css( { userSelect: 'none', userModify: 'read-only', userDrag: 'none', tapHighlightColor: 'transparent' } );
+		$(opts.elements).css( {
+			userSelect: 'none', userModify: 'read-only',
+			userDrag: 'none', tapHighlightColor: 'transparent'
+		} );
 
 		//TOUCHMOD -- TOUCH BEHAVIOR INITIALIZATION
 		var initSlidePos, snapSlideBack, dragSlideTick;
 
 		//TOUCHMOD -- TOUCH TRANSITION & ASSOCIATED OPTIONS
 		if ( !!opts.touchFx && !!$.fn.cycle.transitions[opts.touchFx] ) {
-			touchFx = opts.touchFx;
-			dir = ( !!$.fn.cycle.transitions[opts.touchFx].activeDir ) ? $.fn.cycle.transitions[opts.touchFx].activeDir : { x: 1, y: 0 };
-			if ( !!dir.x ) {
-				changeCycle = (mainContSize.width/4);
-			} else if ( !!dir.y )  {
-				changeCycle = (mainContSize.height/4);
+			opts.touch.touchFx = opts.touchFx;
+			opts.touch.dir = ( !!$.fn.cycle.transitions[opts.touchFx].activeDir ) ? $.fn.cycle.transitions[opts.touchFx].activeDir : { x: 1, y: 0 };
+			if ( !!opts.touch.dir.x ) {
+				opts.touch.changeCycle = (opts.touch.mainContSize.width/4);
+			} else if ( !!opts.touch.dir.y )  {
+				opts.touch.changeCycle = (opts.touch.mainContSize.height/4);
 			}
 
 			//ALLOW USER OPTION TO OVERRIDE DEFAULT TOUCH BEHAVIOR INITIALIZATION
@@ -433,70 +440,67 @@ function integrateTouch (opts, cont) {
 		} else {
 			return false;
 		}
-		changeCycle = ( !!opts.touchCycleLimit ) ? opts.touchCycleLimit : changeCycle;
+
+		opts.touch.changeCycle = ( !!opts.touchCycleLimit ) ? opts.touchCycleLimit : opts.touch.changeCycle;
 
 		//TOUCHMOD -- TOUCH CORE FUNCTIONALITY -- GETTING POSITION OF TOUCH EVENTS, PREPARING ELEMENTS FOR DRAGGING
+		var resetTransition = function () {
+			$.fn.cycle.resetState(opts);
+		}
 		var dragStart = function (event) {
-			if ( !!!opts.busy ) {
+			if( !!opts.busy || !!( navigator.userAgent.match(/android/gi) || location.href.match('testandroid') ) ) { event.preventDefault(); }
+			if( !!opts.busy ) { resetTransition(); }
+
+			if ( !opts.touch.dragstate && !opts.busy ) {
 				window.cycle_touchMoveCurrentPos = getTouchPos(event);
 				var currPos = window.cycle_touchMoveCurrentPos;
 
-				initPos.pageX = currPos.pageX - initPos.pageX;
-				initPos.pageY = currPos.pageY - initPos.pageY;
+				opts.touch.initPos.pageX = currPos.pageX - opts.touch.initPos.pageX;
+				opts.touch.initPos.pageY = currPos.pageY - opts.touch.initPos.pageY;
+
 				var prevNum = (opts.elements.length + opts.currSlide - 1) % opts.elements.length;
 				var nextNum = (opts.elements.length + opts.currSlide + 1) % opts.elements.length;
 
-				$(opts.elements).stop(true,true);
+				opts.touch.prevElem = $( opts.elements[prevNum] );
+				opts.touch.currElem = $( opts.elements[opts.currSlide] );
+				opts.touch.nextElem = $( opts.elements[nextNum] );
 
-				prevElem = $( opts.elements[prevNum] );
-				currElem = $( opts.elements[opts.currSlide] );
-				nextElem = $( opts.elements[nextNum] );
+				opts.touch.currStart.x = opts.touch.currElem.position().left;
+				opts.touch.currStart.y = opts.touch.currElem.position().top;
 
-				currStart.x = currElem.position().left;
-				currStart.y = currElem.position().top;
+				initSlidePos( opts, opts.touch.prevElem, opts.touch.currElem, opts.touch.nextElem, opts.touch.initPos, opts.touch.mainContSize, opts.touch.dir, opts.touch.revdir, opts.touch.currStart );
 
-				initSlidePos( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart );
-
-				dragging = true;
-				dragstate = null;
-			}
-			if( navigator.userAgent.match(/android/gi) || location.href.match('testandroid') ) {
-				event.preventDefault();
+				opts.touch.dragstate = INIT_DRAGSTATE;
 			}
 		}
 
 		var dragFrameTick = function () {
 			var currPos = window.cycle_touchMoveCurrentPos;
-			if ( dragstate !== 'dragging' && !!opts.touchMinDrag &&
-				( Math.abs( diffPos.pageX ) * dir.y > opts.touchMinDrag ||
-					Math.abs( diffPos.pageY ) * dir.x > opts.touchMinDrag ) ) {
-				dragstate = 'locked';
-			}
-			if ( dragstate === 'locked' ) {
-				if( navigator.userAgent.match(/android/gi) || location.href.match('testandroid') ) {
-					var scrollDifY = $(window).scrollTop() - ( ( window.cycle_touchMoveCurrentPos.pageY - initPos.pageY ) * dir.x );
-					var scrollDifX = $(window).scrollLeft() - ( ( window.cycle_touchMoveCurrentPos.pageX - initPos.pageX ) * dir.y );
-					if ( !!scrollDifY ) $(window).scrollTop(scrollDifY);
-					if ( !!scrollDifY ) $(window).scrollLeft(scrollDifX);
-				}
-			}
-			if ( !!!opts.busy && dragging && dragstate !== 'locked' ) {
-				diffPos.pageX = currPos.pageX - initPos.pageX;
-				diffPos.pageY = currPos.pageY - initPos.pageY;
 
-				if ( dragstate !== 'locked' && ( Math.abs( diffPos.pageX ) * dir.x > opts.touchMinDrag || Math.abs( diffPos.pageY ) * dir.y > opts.touchMinDrag ) ) {
-					dragSlideTick( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart );
-					dragstate = 'dragging';
+			opts.touch.diffPos.pageX = currPos.pageX - opts.touch.initPos.pageX;
+			opts.touch.diffPos.pageY = currPos.pageY - opts.touch.initPos.pageY;
+
+			if ( opts.touch.dragstate === DRAGGING_DRAGSTATE ) {
+				if ( Math.abs( opts.touch.diffPos.pageX ) * opts.touch.dir.x > opts.touchMinDrag || Math.abs( opts.touch.diffPos.pageY ) * opts.touch.dir.y > opts.touchMinDrag ) {
+					dragSlideTick( opts, opts.touch.prevElem, opts.touch.currElem, opts.touch.nextElem, opts.touch.diffPos, opts.touch.mainContSize, opts.touch.dir, opts.touch.revdir, opts.touch.currStart );
 				} else {
-					snapSlideBack( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart );
+					snapSlideBack( opts, opts.touch.prevElem, opts.touch.currElem, opts.touch.nextElem, opts.touch.diffPos, opts.touch.mainContSize, opts.touch.dir, opts.touch.revdir, opts.touch.currStart );
 				}
 			}
 			window.requestAnimationFrame( dragFrameTick );
 		}
 
 		var dragMove = function (event) {
-			window.cycle_touchMoveCurrentPos = getTouchPos(event);
-			if ( dragstate === 'dragging' || ( navigator.userAgent.match(/android/gi) || location.href.match('testandroid') ) ) {
+			if ( !!opts.touch.dragstate && !opts.busy ) {
+				window.cycle_touchMoveCurrentPos = getTouchPos(event);
+				if ( opts.touch.dragstate === INIT_DRAGSTATE && ( Math.abs( opts.touch.diffPos.pageX ) * opts.touch.dir.x > opts.touchMinDrag || Math.abs( opts.touch.diffPos.pageY ) * opts.touch.dir.y > opts.touchMinDrag ) ) {
+					opts.touch.dragstate = DRAGGING_DRAGSTATE;
+				}
+				if ( opts.touch.dragstate === INIT_DRAGSTATE && ( Math.abs( opts.touch.diffPos.pageX ) * opts.touch.dir.y > opts.touchMinDrag || Math.abs( opts.touch.diffPos.pageY ) * opts.touch.dir.x > opts.touchMinDrag ) ) {
+					opts.touch.dragstate = SCROLLING_DRAGSTATE;
+				}
+			}
+			if ( opts.touch.dragstate === DRAGGING_DRAGSTATE || !!opts.busy ) {
 				event.preventDefault();
 			}
 		}
@@ -504,55 +508,55 @@ function integrateTouch (opts, cont) {
 		window.cycle_touchMoveCurrentPos = getTouchPos();
 
 		var dragEnd = function (event) {
-			if ( !!!opts.busy && dragging ) {
+			if ( opts.touch.dragstate === DRAGGING_DRAGSTATE ) {
 				var cacheOpts = { speed: opts.speed, fx: opts.fx, ease: opts.easing }
+				var newspeed = 0;
 
-				opts.fx = touchFx;
+				opts.fx = opts.touch.touchFx;
 				opts.easing = 'linear';
 
-				$(opts.elements).stop(true,true);
+				if ( !!opts.touch.dir.x && Math.abs(opts.touch.diffPos.pageX) > opts.touch.changeCycle ) {
+					newspeed = Math.round( opts.speed * ( ( opts.touch.mainContSize.width - (opts.touch.mainContSize.width/4) - Math.abs( opts.touch.diffPos.pageX ) ) / opts.touch.mainContSize.width ) ) + 50;
+					opts.speed = newspeed;
+					opts.speedIn = newspeed;
+					opts.speedOut = newspeed;
 
-				if ( dragstate !== 'locked' && dragging && !!dir.x && Math.abs(diffPos.pageX) > changeCycle ) {
-					opts.speed = opts.speedIn = opts.speedOut = Math.round( opts.speed * ( ( mainContSize.width - (mainContSize.width/4) - Math.abs( diffPos.pageX ) ) / mainContSize.width ) ) + 50;
-					if ( diffPos.pageX < 0 ) advance(opts,1);
-					if ( diffPos.pageX > 0) advance(opts,0);
-				} else if ( dragstate !== 'locked' && dragging && !!dir.y && Math.abs(diffPos.pageY) > changeCycle ) {
-					opts.speed = opts.speedIn = opts.speedOut = Math.round( opts.speed * ( ( mainContSize.height - (mainContSize.height/4) - Math.abs( diffPos.pageY ) ) / mainContSize.height ) ) + 50;
-					if ( diffPos.pageY < 0 ) advance(opts,1);
-					if ( diffPos.pageY > 0) advance(opts,0);
+					if ( opts.touch.diffPos.pageX <= 0) advance(opts,1);
+					if ( opts.touch.diffPos.pageX > 0) advance(opts,0);
+				} else if ( !!opts.touch.dir.y && Math.abs(opts.touch.diffPos.pageY) > opts.touch.changeCycle ) {
+					newspeed = Math.round( opts.speed * ( ( opts.touch.mainContSize.height - (opts.touch.mainContSize.height/4) - Math.abs( opts.touch.diffPos.pageY ) ) / opts.touch.mainContSize.height ) ) + 50;
+					opts.speed = newspeed;
+					opts.speedIn = newspeed;
+					opts.speedOut = newspeed;
+
+					if ( opts.touch.diffPos.pageY <= 0) advance(opts,1);
+					if ( opts.touch.diffPos.pageY > 0) advance(opts,0);
 				} else {
-					snapSlideBack( opts, prevElem, currElem, nextElem, diffPos, mainContSize, dir, revdir, currStart );
+					snapSlideBack( opts, opts.touch.prevElem, opts.touch.currElem, opts.touch.nextElem, opts.touch.diffPos, opts.touch.mainContSize, opts.touch.dir, opts.touch.revdir, opts.touch.currStart );
 				}
-				opts.speed = opts.speedIn = opts.speedOut = cacheOpts.speed;
+				opts.touch.dragstate = null;
+				opts.speed = cacheOpts.speed;
+				opts.speedIn = cacheOpts.speed;
+				opts.speedOut = cacheOpts.speed;
 				opts.fx = cacheOpts.fx;
 				opts.easing = cacheOpts.ease;
 
-				initPos = getTouchPos();
-				diffPos = getTouchPos();
-
-				dragging = false;
-				dragstate = null;
-			}
-		}
-		var dragCancel = function (e) {
-			if ( !!e.originalEvent && !!e.originalEvent.touches && !!e.originalEvent.touches.length ) {
+				opts.touch.initPos = getTouchPos();
+				opts.touch.diffPos = getTouchPos();
+			} else {
 				abortDrag();
 			}
 		}
-		var abortDrag = function () {
-			snapSlideBack( opts, prevElem, currElem, nextElem, initPos, mainContSize, dir, revdir, currStart );
-
-			dragging = false;
-			dragstate = null;
-			opts.busy = false;
+		var dragCancel = function (e) {
+			abortDrag();
 		}
 
-		$cont.bind( {
+		$cont.bind({
 			touchstart: dragStart,
 			touchmove: dragMove,
 			touchend: dragEnd,
 			touchcancel: dragCancel
-		} );
+		});
 
 		if (opts.touchClickDrag) {
 			$cont.bind({
@@ -1259,14 +1263,7 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 		$a.hover(pagerFn, function(){/* no-op */} );
 	}
 	else {
-		// TOUCHMOD -- INTEGRATE TOUCH FUNCTIONALITY INTO PAGERS
-		if ( !supportsTouch ) {
-			$a.bind(opts.pagerEvent, pagerFn);
-		} else {
-			$a.bind(opts.touchPagerEvent, pagerFn);
-			$a.bind(opts.pagerEvent, function (e) { e.preventDefault(); });
-			//$a.bind(opts.pagerEvent, pagerFn);
-		}
+		$a.bind(opts.pagerEvent, pagerFn);
 	}
 
 	if ( ! /^click/.test(opts.pagerEvent) && !opts.allowPagerClickBubble)
@@ -1390,7 +1387,7 @@ $.fn.cycle.defaults = {
     autostop:         0,        // true to end slideshow after X transitions (where X == slide count)
     autostopCount:    0,        // number of transitions (optionally used with autostop to define X)
     backwards:        false,    // true to start slideshow at last slide and move backwards through the stack
-    before:           null,     // transition callback (scope set to element to be shown):     function(currSlideElement, nextSlideElement, options, forwardFlag)
+    before:           null,     // transition callback (scope set to element to be shown): function(currSlideElement, nextSlideElement, options, forwardFlag)
     center:           null,     // set to true to have cycle add top/left margin to each slide (use with width and height options)
     cleartype:        !$.support.opacity,  // true if clearType corrections should be applied (for IE)
     cleartypeNoBg:    false,    // set to true to disable extra cleartype fixing (leave false to force background color setting on slides)
@@ -1437,11 +1434,10 @@ $.fn.cycle.defaults = {
     sync:             1,        // true if in/out transitions should occur simultaneously
     timeout:          4000,     // milliseconds between slide transitions (0 to disable auto advance)
     timeoutFn:        null,     // callback for determining per-slide timeout value:  function(currSlideElement, nextSlideElement, options, forwardFlag)
-	touchFx:	   null,  // name of touch transition effect. Touch Functionality will not be enabled if left "null" or "false"
+	touchFx:	   	  null,  // name of touch transition effect. Touch Functionality will not be enabled if left "null" or "false"
 	touchCycleLimit:  0,  // Number (in px) for touch gesture before a touchend event will force a cycle.
 	touchClickDrag:   0,  // true to enable mouse slide-dragging.
 	touchMinDrag: 	  0,  // Minimum (in px) before touch handling will effect positioning of the cycle
-	touchPagerEvent: 'touchstart.cycle', //Touch Event to use for pagers.
     updateActivePagerLink: null,// callback fn invoked to update the active pager link (adds/removes activePagerClass style)
     width:            null      // container width (if the 'fit' option is true, the slides will be set to this width as well)
 };
