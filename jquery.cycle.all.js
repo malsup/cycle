@@ -1483,6 +1483,21 @@ $.fn.cycle.transitions.uncover = function($cont, $slides, opts) {
 	opts.cssBefore.left = 0;
 };
 
+// uncover horizontall - current slide moves off slide to left or right depending on arrow
+$.fn.cycle.transitions.uncoverHorz = function ($cont, $slides, opts) {
+    var w = $cont.css('overflow', 'hidden').width();
+    var h = $cont.height();
+    opts.before.push(function (curr, next, opts, fwd) {
+        if (opts.rev) fwd = !fwd;
+        $.fn.cycle.commonReset(curr, next, opts, true, true, true);
+        opts.animOut.left = fwd ? -w : w;
+    });
+    opts.animIn.left = 0;
+    opts.animIn.top = 0;
+    opts.cssBefore.top = 0;
+    opts.cssBefore.left = 0;
+};
+
 // toss - move top slide and fade away
 $.fn.cycle.transitions.toss = function($cont, $slides, opts) {
 	var w = $cont.css('overflow','visible').width();
