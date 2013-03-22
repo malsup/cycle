@@ -1,8 +1,8 @@
 /*!
  * jQuery Cycle Plugin (with Transition Definitions)
  * Examples and documentation at: http://jquery.malsup.com/cycle/
- * Copyright (c) 2007-2012 M. Alsup
- * Version: 2.9999.81 (15-JAN-2013)
+ * Copyright (c) 2007-2013 M. Alsup
+ * Version: 3.0.1 (22-MAR-2013)
  * Dual licensed under the MIT and GPL licenses.
  * http://jquery.malsup.com/license.html
  * Requires: jQuery v1.7.1 or later
@@ -10,7 +10,7 @@
 ;(function($, undefined) {
 "use strict";
 
-var ver = '2.9999.81';
+var ver = '3.0.1';
 
 function debug(s) {
 	if ($.fn.cycle.debug)
@@ -147,6 +147,8 @@ function handleArguments(cont, options, arg2) {
 				log('options not found, "prev/next" ignored');
 				return false;
 			}
+			if (typeof arg2 == 'string') 
+				opts.oneTimeFx = arg2;
 			$.fn.cycle[options](opts);
 			return false;
 		default:
