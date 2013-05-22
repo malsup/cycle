@@ -1,3 +1,6 @@
+Note: Currently in a bit of state of disrepair. Use at your own risk.
+
+
 Cycle + Touch
 ===================
 
