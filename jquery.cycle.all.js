@@ -963,7 +963,7 @@ $.fn.cycle.commonReset = function(curr,next,opts,w,h,rev) {
 // the actual fn for effecting a transition
 $.fn.cycle.custom = function(curr, next, opts, cb, fwd, speedOverride) {
 	var $l = $(curr), $n = $(next);
-	var speedIn = opts.speedIn, speedOut = opts.speedOut, easeIn = opts.easeIn, easeOut = opts.easeOut;
+	var speedIn = opts.speedIn, speedOut = opts.speedOut, easeIn = opts.easeIn, easeOut = opts.easeOut, animInDelay = opts.animInDelay, animOutDelay = opts.animOutDelay;
 	$n.css(opts.cssBefore);
 	if (speedOverride) {
 		if (typeof speedOverride == 'number')
@@ -973,11 +973,11 @@ $.fn.cycle.custom = function(curr, next, opts, cb, fwd, speedOverride) {
 		easeIn = easeOut = null;
 	}
 	var fn = function() {
-		$n.animate(opts.animIn, speedIn, easeIn, function() {
+		$n.delay(animInDelay).animate(opts.animIn, speedIn, easeIn, function() {
 			cb();
 		});
 	};
-	$l.animate(opts.animOut, speedOut, easeOut, function() {
+	$l.delay(animOutDelay).animate(opts.animOut, speedOut, easeOut, function() {
 		$l.css(opts.cssAfter);
 		if (!opts.sync) 
 			fn();
@@ -1007,7 +1007,9 @@ $.fn.cycle.defaults = {
     after:            null,     // transition callback (scope set to element that was shown):  function(currSlideElement, nextSlideElement, options, forwardFlag)
     allowPagerClickBubble: false, // allows or prevents click event on pager anchors from bubbling
     animIn:           null,     // properties that define how the slide animates in
+    animInDelay:      0,	// allows delay before next slide transitions in	
     animOut:          null,     // properties that define how the slide animates out
+    animOutDelay:     0,	// allows delay before current slide transitions out
     aspect:           false,    // preserve aspect ratio during fit resizing, cropping if necessary (must be used with fit option)
     autostop:         0,        // true to end slideshow after X transitions (where X == slide count)
     autostopCount:    0,        // number of transitions (optionally used with autostop to define X)
