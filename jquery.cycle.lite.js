@@ -120,8 +120,8 @@ $.fn.cycle = function(options) {
                 go(els,opts,0,!opts.rev);
             }, opts.timeout + (opts.delay||0));
 
-		if (opts.init)
-			opts.init();
+        if (opts.init)
+            opts.init();
     });
 };
 
