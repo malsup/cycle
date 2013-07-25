@@ -119,6 +119,9 @@ $.fn.cycle = function(options) {
             this.cycleTimeout = setTimeout(function() {
                 go(els,opts,0,!opts.rev);
             }, opts.timeout + (opts.delay||0));
+
+		if (opts.init)
+			opts.init();
     });
 };
 
