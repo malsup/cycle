@@ -42,14 +42,14 @@ $.fn.cycle = function(options, arg2) {
 	// in 1.3+ we can fix mistakes with the ready state
 	if (this.length === 0 && options != 'stop') {
 		if (!$.isReady && o.s) {
-			log('DOM not ready, queuing slideshow');
+			debug('DOM not ready, queuing slideshow');
 			$(function() {
 				$(o.s,o.c).cycle(options,arg2);
 			});
 			return this;
 		}
 		// is your DOM ready?  http://docs.jquery.com/Tutorials:Introducing_$(document).ready()
-		log('terminating; zero elements found by selector' + ($.isReady ? '' : ' (DOM not ready)'));
+		debug('terminating; zero elements found by selector' + ($.isReady ? '' : ' (DOM not ready)'));
 		return this;
 	}
 
@@ -72,7 +72,7 @@ $.fn.cycle = function(options, arg2) {
 		var els = $slides.get();
 
 		if (els.length < 2) {
-			log('terminating; too few slides: ' + els.length);
+			debug('terminating; too few slides: ' + els.length);
 			return;
 		}
 
@@ -145,7 +145,7 @@ function handleArguments(cont, options, arg2) {
 		case 'next':
 			opts = $(cont).data('cycle.opts');
 			if (!opts) {
-				log('options not found, "prev/next" ignored');
+				debug('options not found, "prev/next" ignored');
 				return false;
 			}
 			if (typeof arg2 == 'string') 
@@ -162,11 +162,11 @@ function handleArguments(cont, options, arg2) {
 		var num = options;
 		options = $(cont).data('cycle.opts');
 		if (!options) {
-			log('options not found, can not advance slide');
+			debug('options not found, can not advance slide');
 			return false;
 		}
 		if (num < 0 || num >= options.elements.length) {
-			log('invalid slide index: ' + num);
+			debug('invalid slide index: ' + num);
 			return false;
 		}
 		options.nextSlide = num;
@@ -185,7 +185,7 @@ function handleArguments(cont, options, arg2) {
 		if (!isPaused && arg2 === true) { // resume now!
 			var options = $(cont).data('cycle.opts');
 			if (!options) {
-				log('options not found, can not resume');
+				debug('options not found, can not resume');
 				return false;
 			}
 			if (cont.cycleTimeout) {
@@ -405,13 +405,13 @@ function buildOptions($cont, $slides, els, options, o) {
 			// don't requeue for images that are still loading but have a valid size
 			if (loading) {
 				if (o.s && opts.requeueOnImageNotLoaded && ++options.requeueAttempts < 100) { // track retry count so we don't loop forever
-					log(options.requeueAttempts,' - img slide not loaded, requeuing slideshow: ', this.src, this.cycleW, this.cycleH);
+					debug(options.requeueAttempts,' - img slide not loaded, requeuing slideshow: ', this.src, this.cycleW, this.cycleH);
 					setTimeout(function() {$(o.s,o.c).cycle(options);}, opts.requeueTimeout);
 					requeue = true;
 					return false; // break each loop
 				}
 				else {
-					log('could not determine size of image: '+this.src, this.cycleW, this.cycleH);
+					debug('could not determine size of image: '+this.src, this.cycleW, this.cycleH);
 				}
 			}
 		}
@@ -467,7 +467,7 @@ function buildOptions($cont, $slides, els, options, o) {
 		if ($.isFunction(init))
 			init($cont, $slides, opts);
 		else if (opts.fx != 'custom' && !opts.multiFx) {
-			log('unknown transition: ' + opts.fx,'; slideshow terminating');
+			debug('unknown transition: ' + opts.fx,'; slideshow terminating');
 			return false;
 		}
 	}
@@ -514,14 +514,14 @@ function supportMultiTransitions(opts) {
 			var fx = opts.fxs[i];
 			tx = txs[fx];
 			if (!tx || !txs.hasOwnProperty(fx) || !$.isFunction(tx)) {
-				log('discarding unknown transition: ',fx);
+				debug('discarding unknown transition: ',fx);
 				opts.fxs.splice(i,1);
 				i--;
 			}
 		}
 		// if we have an empty list then we threw everything away!
 		if (!opts.fxs.length) {
-			log('No valid transitions named; slideshow terminating.');
+			debug('No valid transitions named; slideshow terminating.');
 			return false;
 		}
 	}
