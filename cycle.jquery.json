@@ -1,0 +1,34 @@
+{
+  "name": "cycle",
+  "title": "Cycle",
+  "description": "Wildly popular slideshow plugin for displaying image or non-image slideshows. Lots of available transition effects such as fade, scroll, shuffle, zoom, and many more. Lots of features and ease of use is what this plugin is all about.",
+  "keywords": [
+    "slideshow",
+    "carousel",
+    "slider",
+    "cycle"
+  ],
+  "version": "3.0.3-2013.07.11",
+  "author": {
+    "name": "M. Alsup",
+    "url": "http://jquery.malsup.com"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://malsup.github.com/mit-license.txt"
+    },
+    {
+      "type": "GPL",
+      "url": "http://malsup.github.com/gpl-license-v2.txt"
+    }
+  ],
+  "bugs": "https://github.com/malsup/cycle/issues",
+  "homepage": "http://jquery.malsup.com/cycle/",
+  "docs": "http://jquery.malsup.com/cycle/",
+  "download": "http://malsup.github.com/jquery.cycle.all.js",
+  "dependencies": {
+    "jquery": ">=1.7"
+  }
+}
+
