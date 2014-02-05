@@ -28,7 +28,7 @@ $.expr[':'].paused = function(el) {
 
 // the options arg can be...
 //   a number  - indicates an immediate transition should occur to the given slide index
-//   a string  - 'pause', 'resume', 'toggle', 'next', 'prev', 'stop', 'destroy' or the name of a transition effect (ie, 'fade', 'zoom', etc)
+//   a string  - 'pause', 'resume', 'toggle', 'next', 'previous', 'stop', 'destroy' or the name of a transition effect (ie, 'fade', 'zoom', etc)
 //   an object - properties to control the slideshow
 //
 // the arg2 arg can be...
@@ -141,11 +141,11 @@ function handleArguments(cont, options, arg2) {
 			checkInstantResume(false, arg2, cont);
 			triggerPause(cont);
 			return false;
-		case 'prev':
+		case 'previous':
 		case 'next':
 			opts = $(cont).data('cycle.opts');
 			if (!opts) {
-				log('options not found, "prev/next" ignored');
+				log('options not found, "previous/next" ignored');
 				return false;
 			}
 			if (typeof arg2 == 'string') 
@@ -207,9 +207,9 @@ function removeFilter(el, opts) {
 // unbind event handlers
 function destroy(cont, opts) {
 	if (opts.next)
-		$(opts.next).unbind(opts.prevNextEvent);
-	if (opts.prev)
-		$(opts.prev).unbind(opts.prevNextEvent);
+		$(opts.next).unbind(opts.previousNextEvent);
+	if (opts.previous)
+		$(opts.previous).unbind(opts.previousNextEvent);
 	
 	if (opts.pager || opts.pagerAnchorBuilder)
 		$.each(opts.pagerAnchors || [], function() {
@@ -481,9 +481,9 @@ function buildOptions($cont, $slides, els, options, o) {
 			opts.after[0].apply(e0, [e0, e0, opts, true]);
 	}
 	if (opts.next)
-		$(opts.next).bind(opts.prevNextEvent,function(){return advance(opts,1);});
+		$(opts.next).bind(opts.previousNextEvent,function(){return advance(opts,1);});
 	if (opts.prev)
-		$(opts.prev).bind(opts.prevNextEvent,function(){return advance(opts,0);});
+		$(opts.prev).bind(opts.previousNextEvent,function(){return advance(opts,0);});
 	if (opts.pager || opts.pagerAnchorBuilder)
 		buildPager(els,opts);
 
@@ -787,9 +787,9 @@ function getTimeout(curr, next, opts, fwd) {
 	return opts.timeout;
 }
 
-// expose next/prev function, caller must pass in state
+// expose next/previous function, caller must pass in state
 $.fn.cycle.next = function(opts) { advance(opts,1); };
-$.fn.cycle.prev = function(opts) { advance(opts,0);};
+$.fn.cycle.previous = function(opts) { advance(opts,0);};
 
 // advance slide forward or back
 function advance(opts, moveForward) {
@@ -824,7 +824,7 @@ function advance(opts, moveForward) {
 		}
 	}
 
-	var cb = opts.onPrevNextEvent || opts.prevNextClick; // prevNextClick is deprecated
+	var cb = opts.onPreviousNextEvent || opts.previousNextClick; // previousNextClick is deprecated
 	if ($.isFunction(cb))
 		cb(val > 0, opts.nextSlide, els[opts.nextSlide]);
 	go(els, opts, 1, moveForward);
@@ -1029,7 +1029,7 @@ $.fn.cycle.defaults = {
     easeOut:          null,     // easing for "out" transition
     easing:           null,     // easing method for both in and out transitions
     end:              null,     // callback invoked when the slideshow terminates (use with autostop or nowrap options): function(options)
-    fastOnEvent:      0,        // force fast transitions when triggered manually (via pager or prev/next); value == time in ms
+    fastOnEvent:      0,        // force fast transitions when triggered manually (via pager or previous/next); value == time in ms
     fit:              0,        // force slides to fit container
     fx:               'fade',   // name of transition effect (or comma separated names, ex: 'fade,scrollUp,shuffle')
     fxFn:             null,     // function used to control the transition: function(currSlideElement, nextSlideElement, options, afterCalback, forwardFlag)
@@ -1039,14 +1039,14 @@ $.fn.cycle.defaults = {
     next:             null,     // element, jQuery object, or jQuery selector string for the element to use as event trigger for next slide
     nowrap:           0,        // true to prevent slideshow from wrapping
     onPagerEvent:     null,     // callback fn for pager events: function(zeroBasedSlideIndex, slideElement)
-    onPrevNextEvent:  null,     // callback fn for prev/next events: function(isNext, zeroBasedSlideIndex, slideElement)
+    onPreviousNextEvent:  null, // callback fn for previous/next events: function(isNext, zeroBasedSlideIndex, slideElement)
     pager:            null,     // element, jQuery object, or jQuery selector string for the element to use as pager container
     pagerAnchorBuilder: null,   // callback fn for building anchor links:  function(index, DOMelement)
     pagerEvent:       'click.cycle', // name of event which drives the pager navigation
     pause:            0,        // true to enable "pause on hover"
     pauseOnPagerHover: 0,       // true to pause when hovering over pager link
-    prev:             null,     // element, jQuery object, or jQuery selector string for the element to use as event trigger for previous slide
-    prevNextEvent:    'click.cycle',// event which drives the manual transition to the previous or next slide
+    previous:         null,     // element, jQuery object, or jQuery selector string for the element to use as event trigger for previous slide
+    previousNextEvent: 'click.cycle', // event which drives the manual transition to the previous or next slide
     random:           0,        // true for random, false for sequence (not applicable to shuffle fx)
     randomizeEffects: 1,        // valid when multiple effects are used; true to make the effect sequence random
     requeueOnImageNotLoaded: true, // requeue the slideshow if any image slides are not yet loaded
