@@ -90,6 +90,10 @@ $.fn.cycle = function(options, arg2) {
 			debug('first timeout: ' + startTime);
 			this.cycleTimeout = setTimeout(function(){go(els,opts2,0,!opts.backwards);}, startTime);
 		}
+
+		if (opts.init) {
+			opts.init();
+		}
 	});
 };
 
