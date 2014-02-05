@@ -25,7 +25,6 @@ $.expr[':'].paused = function(el) {
 	return el.cyclePause;
 };
 
-
 // the options arg can be...
 //   a number  - indicates an immediate transition should occur to the given slide index
 //   a string  - 'pause', 'resume', 'toggle', 'next', 'prev', 'stop', 'destroy' or the name of a transition effect (ie, 'fade', 'zoom', etc)
@@ -696,6 +695,9 @@ function go(els, opts, manual, fwd) {
 
 		debug('tx firing('+fx+'); currSlide: ' + opts.currSlide + '; nextSlide: ' + opts.nextSlide);
 		
+		// fix for Chrome bug, http://code.google.com/p/chromium/issues/detail?id=111218
+		$(next).fixChromeBug();
+
 		// get ready to perform the transition
 		opts.busy = 1;
 		if (opts.fxFn) // fx function provided?
@@ -1539,5 +1541,21 @@ $.fn.cycle.transitions.wipe = function($cont, $slides, opts) {
 	opts.animIn	   = { left: 0 };
 	opts.animOut   = { left: 0 };
 };
+
+// fix for Chrome bug, http://code.google.com/p/chromium/issues/detail?id=111218
+// TODO remove this when Chrome gets fixed
+$.fn.fixChromeBg = function() {
+  if (! /chrome/i.test(navigator.userAgent) )
+	  return this;
+
+  return this.each(function() {
+      var el = $(this), bi = el.css( 'background-image' );
+      if (bi) {
+        setTimeout(function() {
+          el.css( 'background-image', bi);
+        }, 1);
+      }
+  });
+}
 
 })(jQuery);
