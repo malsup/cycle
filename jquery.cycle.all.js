@@ -84,7 +84,7 @@ $.fn.cycle = function(options, arg2) {
 
 		// if it's an auto slideshow, kick it off
 		if (startTime) {
-			startTime += (opts2.delay || 0);
+			startTime = parseInt(startTime) + (opts2.delay || 0);
 			if (startTime < 10)
 				startTime = 10;
 			debug('first timeout: ' + startTime);
@@ -777,7 +777,7 @@ $.fn.cycle.updateActivePagerLink = function(pager, currSlide, clsName) {
 function getTimeout(curr, next, opts, fwd) {
 	if (opts.timeoutFn) {
 		// call user provided calc fn
-		var t = opts.timeoutFn.call(curr,curr,next,opts,fwd);
+		var t = opts.timeoutFn.call(null,curr,next,opts,fwd);
 		while (opts.fx != 'none' && (t - opts.speed) < 250) // sanitize timeout
 			t += opts.speed;
 		debug('calculated timeout: ' + t + '; speed: ' + opts.speed);
