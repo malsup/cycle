@@ -19,7 +19,7 @@ function debug(s) {
 function log() {
 	/*global console */
 	if (window.console && console.log)
-		console.log('[cycle] ' + Array.prototype.join.call(arguments,' '));
+		console.log('[cycle] ' + Array.prototype.join.call(arguments,' ')); 
 }
 $.expr[':'].paused = function(el) {
 	return el.cyclePause;
@@ -846,7 +846,7 @@ $.fn.cycle.createPagerAnchor = function(i, el, $p, els, opts) {
 		debug('pagerAnchorBuilder('+i+', el) returned: ' + a);
 	}
 	else
-		a = '<a href="#">'+(i+1)+'</a>';
+		a = '<span>'+(i+1)+'</span>';
 		
 	if (!a)
 		return;
